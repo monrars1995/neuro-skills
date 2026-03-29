@@ -42,7 +42,8 @@ Especialista em copy de anúncios que analisa a voz da marca, mantém consistên
 ## Fluxo de Trabalho
 
 ```
-traffic-strategist → ad-copywriter → meta-ads-manager(prep)            (copy)          (executa)
+traffic-strategist → ad-copywriter → meta-ads-manager
+     (prep)              (copy)          (executa)
 ```
 
 1. **traffic-strategist**: Analisa pasta da campanha, valida assets, identifica lacunas
@@ -51,9 +52,110 @@ traffic-strategist → ad-copywriter → meta-ads-manager(prep)            (copy
 
 ---
 
+## Comandos Completos
+
+### 📋 Traffic Strategist
+
+| Comando | Descrição |
+|---------|-----------|
+| `analise {cliente}` | Analisa pasta do cliente |
+| `analise {cliente} {campanha}` | Analisa campanha específica |
+| `prepara {cliente}` | Prepara tudo para criação de campanha |
+| `check {cliente}` | Executa validação de checklist |
+| `organiza {cliente}` | Organiza e renomeia arquivos |
+| `gera docs {cliente}` | Gera toda documentação |
+
+**Exemplos:**
+```
+> Analise o briefing em /campanhas/nike/2024-03/spring-sale/
+> Prepare a campanha para o cliente Nike
+> Verifique os criativos em /campanhas/nike/2024-03/black_friday/
+> Gere documentação para o cliente fitness_app
+```
+
+### ✍️ Ad Copywriter
+
+| Comando | Descrição |
+|---------|-----------|
+| `analisa voz {cliente}` | Analisa voz da marca a partir do briefing |
+| `cria copy {cliente}` | Gera copy de anúncio com voz da marca |
+| `variantes {cliente}` | Cria variações para teste A/B |
+| `ajusta tom {cliente}` | Ajusta tom baseado em feedback |
+| `exporta copy {cliente}` | Exporta copy para markdown |
+
+**Exemplos:**
+```
+> Analise a voz da marca Nike
+> Crie copy para a campanha Nike Spring Sale
+> Gere variações para teste A/B
+> Ajuste o tom para mais casual
+```
+
+### 🎯 Meta Ads Manager
+
+#### Gerenciamento de Contas
+
+| Comando | Descrição |
+|---------|-----------|
+| `/meta-ads setup` | Inicializa skill, salva credenciais da conta |
+| `/meta-ads accounts list` | Lista todas as contas salvas |
+| `/meta-ads accounts add {nome}` | Adiciona nova conta |
+| `/meta-ads accounts use {nome}` | Define conta ativa |
+| `/meta-ads accounts remove {nome}` | Remove conta |
+| `/meta-ads accounts export` | Exporta configurações para backup |
+| `/meta-ads accounts import` | Importa configurações de backup |
+
+#### Gerenciamento de Campanhas
+
+| Comando | Descrição |
+|---------|-----------|
+| `/meta-ads campaign create` | Cria nova campanha lendo pasta |
+| `/meta-ads analyze {período}` | Analisa desempenho |
+| `/meta-ads diagnose` | Executa diagnósticos nas campanhas ativas |
+| `/meta-ads scale {id}` | Escala campanha com segurança |
+| `/meta-ads pause {id}` | Pausa campanha |
+| `/meta-ads resume {id}` | Retoma campanha |
+| `/meta-ads status` | Mostra status atual |
+
+#### Comandos de Pastas
+
+| Comando | Descrição |
+|---------|-----------|
+| `/meta-ads clients` | Lista todos os clientes |
+| `/meta-ads campaigns {cliente}` | Lista campanhas do cliente |
+| `/meta-ads folder create {cliente} {nome}` | Cria pasta de campanha |
+| `/meta-ads briefing {cliente} {campanha}` | Lê briefing |
+
+#### Períodos de Análise
+
+| Período | Descrição |
+|---------|-----------|
+| `today` | Dados de hoje |
+| `yesterday` | Dados de ontem |
+| `last7d` | Últimos 7 dias |
+| `last14d` | Últimos 14 dias |
+| `last30d` | Últimos 30 dias |
+| `last90d` | Últimos 90 dias |
+| `this_month` | Mês atual |
+| `last_month` | Mês anterior |
+
+**Exemplos:**
+```
+> /meta-ads setup
+> Liste minhas contas de anúncios salvas
+> Crie campanha a partir de /campanhas/nike/2024-03/spring-sale/
+> Analise a performance da campanha última semana
+> Escale a campanha com CPA abaixo de $15
+> Diagnóstico das campanhas ativas
+```
+
+---
+
 ## Instalação
 
-### Claude Code (Anthropic)```bash
+### Claude Code (Anthropic)
+
+```bash
 # Clone o repositório
 git clone https://github.com/monrars1995/neuro-skills.git
 
@@ -101,42 +203,16 @@ cp -r neuro-skills/ad-copywriter ~/.opencode/skills/
 
 ---
 
-## Uso
-
-### Traffic Strategist
-
-```
-> Analise o briefing em /campanhas/nike/2024-03/spring-sale/> Prepare a campanha para o cliente Nike
-> Verifique os criativos em /campanhas/nike/2024-03/black_friday/
-```
-
-### Ad Copywriter
-
-```
-> Crie variações de copy para a campanha Nike Spring Sale
-> Analise a voz da marca Nike
-> Gere copies para Feed, Stories e Reels
-```
-
-### Meta Ads Manager
-
-```
-> /meta-ads setup
-> Liste minhas contas de anúncios salvas
-> Crie campanha a partir de /campanhas/nike/2024-03/spring-sale/
-> Analise a performance da campanha última semana
-> Escale a campanha com CPA abaixo de $15
-```
-
----
-
 ## Estrutura de Diretórios
 
 ```
 /campanhas/{cliente}/{YYYY-MM}/{campanha}/
-├── briefing.md          # Briefing da campanha (obrigatório)├── analise.md           # Gerado pelo traffic-strategist
-├── checklist.md         # Gerado pelo traffic-strategist├── copy_variants.md    # Gerado pelo ad-copywriter
-├── targeting.json       # Gerado pelo ad-copywriter├── brand_voice.json    # Gerado pelo ad-copywriter
+├── briefing.md          # Briefing da campanha (obrigatório)
+├── analise.md           # Gerado pelo traffic-strategist
+├── checklist.md        # Gerado pelo traffic-strategist
+├── copy_variants.md    # Gerado pelo ad-copywriter
+├── targeting.json      # Gerado pelo ad-copywriter
+├── brand_voice.json    # Gerado pelo ad-copywriter
 └── ad_*.*              # Assets de criativos
 ```
 
@@ -150,7 +226,7 @@ ad_01_feed_image.jpg      # Criativo 1, Feed, Imagem
 ad_01_feed_video.mp4      # Criativo 1, Feed, Vídeo
 ad_02_story_video.mp4     # Criativo 2, Stories, Vídeo
 ad_02_reels_video.mp4     # Criativo 2, Reels, Vídeo
-ad_03_carousel_01.jpg     # Criativo 3, Carousel, Card 1
+ad_03_carousel_01.jpg     # Criativo 3, Card 1 do Carrossel
 ```
 
 ---
@@ -160,40 +236,10 @@ ad_03_carousel_01.jpg     # Criativo 3, Carousel, Card 1
 ```
 ~/.meta-ads-manager/
 ├── accounts.json       # Contas de anúncios salvas
-├── session.json        # Dados da sessão atual├── cache/              # Cache de insights└── logs/               # Histórico de ações
+├── session.json        # Dados da sessão atual
+├── cache/              # Cache de insights
+└── logs/               # Histórico de ações
 ```
-
----
-
-## Comandos Principais
-
-### Traffic Strategist
-
-| Comando | Descrição |
-|---------|-----------|
-| `analise {cliente}` | Analisa pasta do cliente |
-| `analise {cliente} {campanha}` | Analisa campanha específica |
-| `prepara {cliente}` | Prepara tudo para criação de campanha |
-| `check {cliente}` | Executa validação checklist |
-| `organiza {cliente}` | Organiza e renomeia arquivos |
-
-### Ad Copywriter
-
-| Comando | Descrição |
-|---------|-----------|
-| `analisa voz {cliente}` | Analisa voz da marca do briefing |`cria copy {cliente}` | Gera copy de anúncio com voz da marca |
-| `variantes {cliente}` | Cria variações para testes A/B |
-| `ajusta tom {cliente}` | Ajusta tom baseado em feedback |
-
-### Meta Ads Manager
-
-| Comando | Descrição |
-|---------|-----------|`/meta-ads setup` | Inicializa e salva credenciais |
-| `/meta-ads accounts list` | Lista contas salvas |
-| `/meta-ads accounts use {nome}` | Define conta ativa |
-| `/meta-ads campaign create` | Cria nova campanha |
-| `/meta-ads analyze {período}` | Analisa performance |
-| `/meta-ads diagnose` | Diagnóstica campanhas ativas |
 
 ---
 
@@ -201,7 +247,8 @@ ad_03_carousel_01.jpg     # Criativo 3, Carousel, Card 1
 
 - Conta Meta Business
 - Facebook App com Graph API v21.0
-- Token de acesso válido com permissão `ads_management`- Pixel do Facebook configurado (recomendado)
+- Token de acesso válido com permissão `ads_management`
+- Pixel do Facebook configurado (recomendado)
 - Página do Facebook conectada (recomendado)
 
 ---
@@ -225,9 +272,13 @@ echo '{"version":"1.0","accounts":{},"active_account":null}' > ~/.meta-ads-manag
 ```
 Execute: /meta-ads setup
 
-Você precisará de:- Access Token: https://developers.facebook.com/tools/explorer/
-  - Permissões: ads_management, ads_read, pages_read_engagement- Ad Account ID: https://business.facebook.com/settings/ad-accounts
-  - Formato: act_123456789 ou 123456789- Pixel ID (opcional): https://business.facebook.com/settings/pixels- Page ID (opcional): https://business.facebook.com/settings/pages
+Você precisará de:
+- Access Token: https://developers.facebook.com/tools/explorer/
+  - Permissões: ads_management, ads_read, pages_read_engagement
+- Ad Account ID: https://business.facebook.com/settings/ad-accounts
+  - Formato: act_123456789 ou 123456789
+- Pixel ID (opcional): https://business.facebook.com/settings/pixels
+- Page ID (opcional): https://business.facebook.com/settings/pages
 ```
 
 ### 3. Crie Sua Primeira Campanha
@@ -245,6 +296,44 @@ cp ad_01_feed_video.mp4 /campanhas/nike/2024-03/black_friday/
 
 # Execute o skill
 > Crie uma campanha para Nike Black Friday
+```
+
+---
+
+## Workflow Recomendado
+
+### 1. Preparação (traffic-strategist)
+
+```
+> Analise /campanhas/nike/2024-03/black_friday/
+> Prepare a campanha para Nike
+> Gere documentação para Nike
+```
+
+Isso cria:
+- `analise.md` - Análise completa
+- `checklist.md` - Checklist de validação
+- Organiza os arquivos de criativos
+
+### 2. Copy (ad-copywriter)
+
+```
+> Analise a voz da marca Nike
+> Crie copy para Nike Black Friday
+> Gere variações para teste A/B
+```
+
+Isso cria:
+- `brand_voice.json` - Voz da marca
+- `copy_variants.md` - Variações de copy
+- `targeting.json` - Configurações de targeting
+
+### 3. Execução (meta-ads-manager)
+
+```
+> /meta-ads setup
+> /meta-ads campaign create
+> Campanha criada a partir de /campanhas/nike/2024-03/black_friday/
 ```
 
 ---

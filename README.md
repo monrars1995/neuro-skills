@@ -338,6 +338,35 @@ Isso cria:
 
 ---
 
+## Autor
+
+**Monrars**
+
+- Instagram: [@monrars](https://instagram.com/monrars)
+- GitHub: [@monrars1995](https://github.com/monrars1995)
+
+---
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+## Versões
+
+| Versão | Branch | Status | Descrição |
+|--------|--------|--------|-----------|
+| `v1.0.0` | `main` | Produção | Versão estável atual |
+| `v2.0.0-beta` | `beta` | Beta | Sistema de memória compartilhada |
+
+Para usar a versão beta:
+```bash
+git clone -b beta https://github.com/monrars1995/neuro-skills.git
+```
+
+---
+
 ## Criado por
 
 @monrars

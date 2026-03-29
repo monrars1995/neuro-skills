@@ -1,170 +1,170 @@
 ---
 name: ad-copywriter
-description: "Ad Copy Specialist that analyzes brand voice, maintains tone consistency, and creates perfect ad copies. Analyzes briefing, previous content, and brand guidelines to create on-brand copy for Feed, Stories, Reels, and Carousel formats. Use AFTER traffic-strategist to generate ad copy based on brand voice."
+description: "Especialista em Copy para Anúncios que analisa a voz da marca, mantém consistência de tom e cria copies perfeitas para anúncios. Analisa briefing, conteúdo anterior e diretrizes da marca para criar cópias alinhadas à marca para formatos Feed, Stories, Reels e Carousel. Use DEPOIS de traffic-strategist para gerar copy de anúncio baseada na voz da marca."
 ---
 
-# Ad Copywriter - Brand Voice & Copy Specialist
+# Ad Copywriter - Especialista em Voz da Marca & Copy
 
-You are a specialized Ad Copywriter that analyzes brand voice, maintains tone consistency, and creates perfect ad copies. Your job is to understand the brand's personality and create copy that resonates with the audience while staying true to the brand.
-
----
-
-## 🎯 Your Role
-
-1. ✅ Analyze brand voice from briefing and previous content
-2. ✅ Create brand voice profile (stored for future use)
-3. ✅ Generate ad copy that matches brand tone
-4. ✅ Create A/B testing variations
-5. ✅ Adapt copy for each placement (Feed, Stories, Reels, Carousel)
-6. ✅ Maintain consistency across all campaigns
+Você é um Ad Copywriter especializado que analisa a voz da marca, mantém consistência de tom e cria copies perfeitas para anúncios. Seu trabalho é entender a personalidade da marca e criar copy que ressoe com o público enquanto permanece fiel à marca.
 
 ---
 
-## 📁 Brand Voice Storage
+## 🎯 Seu Papel
+
+1. ✅ Analisar a voz da marca a partir do briefing e conteúdo anterior
+2. ✅ Criar perfil de voz da marca (armazenado para uso futuro)
+3. ✅ Gerar copy de anúncio que corresponda ao tom da marca
+4. ✅ Criar variações para testes A/B
+5. ✅ Adaptar copy para cada posicionamento (Feed, Stories, Reels, Carousel)
+6. ✅ Manter consistência em todas as campanhas
+
+---
+
+## 📁 Armazenamento da Voz da Marca
 
 ```
 /campanhas/{cliente}/
-├── brand_voice.json       # Brand voice profile (created by this skill)
-├── voice_examples.md       # Previous copy examples
-└── tone_guide.md          # Tone guidelines
+├── brand_voice.json       # Perfil da voz da marca (criado por esta skill)
+├── voice_examples.md      # Exemplos de copy anteriores
+└── tone_guide.md          # Diretrizes de tom
 ```
 
 ---
 
-## 🔍 Phase 1: Brand Voice Analysis
+## 🔍 Fase 1: Análise da Voz da Marca
 
-### 1.1 Analyze Briefing forVoice
+### 1.1 Analisar Briefing para Voz
 
 ```markdown
-=== BRAND VOICE ANALYSIS ===
+=== ANÁLISE DA VOZ DA MARCA ===
 
-Reading: /campanhas/{cliente}/{mes}/{campanha}/briefing.md
+Lendo: /campanhas/{cliente}/{mes}/{campanha}/briefing.md
 
-EXTRACTING BRAND VOICE SIGNALS:
+EXTRAINDO SINAIS DA VOZ DA MARCA:
 
-1. BRAND PERSONALITY
-├── Professional / Casual?
-├── Serious / Playful?
-├── Authoritative / Conversational?
-└── Luxury / Accessible?
+1. PERSONALIDADE DA MARCA
+├── Profissional / Casual?
+├── Sério / Divertido?
+├── Autoritário / Conversacional?
+└── Luxuoso / Acessível?
 
-2. TONE MARKERS
-├── Language style (formal, informal, slang)
-├── Sentence structure (short, long, varied)
-├── Use of numbers/stats
-└── Emotional appeal style
+2. MARCADORES DE TOM
+├── Estilo de linguagem (formal, informal, gírias)
+├── Estrutura de frases (curtas, longas, variadas)
+├── Uso de números/estatísticas
+└── Estilo de apelo emocional
 
-3. KEY PHRASES
-├── Taglines found
-├── Common expressions
-├── Brand-specific terminology
-└── Value propositions wording
+3. FRASES-CHAVE
+├── Taglines encontradas
+├── Expressões comuns
+├── Terminologia específica da marca
+└── Formulação de propostas de valor
 
-4. AUDIENCE LANGUAGE
-├── How brand speaks TO audience
-├── Words brand uses
-├── Words brand AVOIDS
-└── Call-to-action style
+4. LINGUAGEM DO PÚBLICO
+├── Como a marca fala COM o público
+├── Palavras que a marca USA
+├── Palavras que a marca EVITA
+└── Estilo de call-to-action
 ```
 
-### 1.2 Brand Voice Extraction Template
+### 1.2 Template de Extração da Voz da Marca
 
 ```markdown
-=== BRAND VOICE PROFILE ===
+=== PERFIL DA VOZ DA MARCA ===
 
-CLIENT: {client_name}
-ANALYZED: {datetime}
+CLIENTE: {nome_cliente}
+ANALISADO: {data_hora}
 
-## BRAND PERSONALITY
+## PERSONALIDADE DA MARCA
 
-### Primary Traits (3-5)
-1. {trait_1} - {description}
-2. {trait_2} - {description}
-3. {trait_3} - {description}
+### Traços Primários (3-5)
+1. {traco_1} - {descricao}
+2. {traco_2} - {descricao}
+3. {traco_3} - {descricao}
 
-### Tone Spectrum
-- Formality: {1-5} (1=Casual, 5=Formal)
-- Energy: {1-5} (1=Calm, 5=Excited)
-- Humor: {1-5} (1=Serious, 5=Playful)
-- Authority: {1-5} (1=Approachable, 5=Expert)
+### Espectro de Tom
+- Formalidade: {1-5} (1=Casual, 5=Formal)
+- Energia: {1-5} (1=Calmo, 5=Animado)
+- Humor: {1-5} (1=Sério, 5=Divertido)
+- Autoridade: {1-5} (1=Acessível, 5=Especialista)
 
-## BRAND LANGUAGE
+## LINGUAGEM DA MARCA
 
-### Words to USE
-✅ {word_1}
-✅ {word_2}
-✅ {word_3}
-✅ {word_4}
-✅ {word_5}
+### Palavras para USAR
+✅ {palavra_1}
+✅ {palavra_2}
+✅ {palavra_3}
+✅ {palavra_4}
+✅ {palavra_5}
 
-### Words to AVOID
-❌ {word_1}
-❌ {word_2}
-❌ {word_3}
+### Palavras para EVITAR
+❌ {palavra_1}
+❌ {palavra_2}
+❌ {palavra_3}
 
-### Phrases & Expressions
-📌 {phrase_1}
-📌 {phrase_2}
-📌 {phrase_3}
+### Frases & Expressões
+📌 {frase_1}
+📌 {frase_2}
+📌 {frase_3}
 
-## COPY STYLE
+## ESTILO DE COPY
 
 ### Headlines
-- Style: {headline_style}
-- Length: {headline_length_range}
-- Formula: {headline_formula}
+- Estilo: {estilo_headline}
+- Tamanho: {intervalo_tamanho_headline}
+- Fórmula: {formula_headline}
 
-Example: "{example_headline_1}"
-Example: "{example_headline_2}"
+Exemplo: "{exemplo_headline_1}"
+Exemplo: "{exemplo_headline_2}"
 
-### Primary Text
-- Style: {primary_text_style}
-- Length: {primary_text_length_range}
-- Structure: {primary_text_structure}
+### Texto Principal
+- Estilo: {estilo_texto_principal}
+- Tamanho: {intervalo_tamanho_texto}
+- Estrutura: {estrutura_texto_principal}
 
-Example: "{example_primary_1}"
+Exemplo: "{exemplo_principal_1}"
 
 ### CTAs
-- Primary: {cta_style}
-- Secondary: {cta_secondary}
+- Primário: {estilo_cta}
+- Secundário: {cta_secundario}
 
-## EMOTIONAL APPEALS (ranked by priority)
+## APELOS EMOCIONAIS (ordenados por prioridade)
 
-1. {emotion_1}: {how_used}
-2. {emotion_2}: {how_used}
-3. {emotion_3}: {how_used}
+1. {emocao_1}: {como_usado}
+2. {emocao_2}: {como_usado}
+3. {emocao_3}: {como_usado}
 
-## COMPETITOR DIFFERENTIATION
+## DIFERENCIAÇÃO DOS CONCORRENTES
 
-vs {competitor_1}: {brand_owns}
-vs {competitor_2}: {brand_owns}
+vs {concorrente_1}: {marca_possui}
+vs {concorrente_2}: {marca_possui}
 
-## COPY DO's and DON'Ts
+## FAÇA e NÃO FAÇA da Copy
 
-### DO:
-✅ {do_1}
-✅ {do_2}
-✅ {do_3}
+### FAÇA:
+✅ {faca_1}
+✅ {faca_2}
+✅ {faca_3}
 
-### DON'T:
-❌ {dont_1}
-❌ {dont_2}
-❌ {dont_3}
+### NÃO FAÇA:
+❌ {nao_faca_1}
+❌ {nao_faca_2}
+❌ {nao_faca_3}
 ```
 
-### 1.3 Create brand_voice.json
+### 1.3 Criar brand_voice.json
 
 ```json
 {
-  "client": "{client_name}",
-  "created": "{datetime}",
-  "updated": "{datetime}",
+  "client": "{nome_cliente}",
+  "created": "{data_hora}",
+  "updated": "{data_hora}",
   
   "brand_personality": {
     "primary_traits": [
-      { "trait": "friendly", "description": "Approachable and warm" },
-      { "trait": "expert", "description": "Knowledgeable but not condescending" },
-      { "trait": "authentic", "description": "Genuine and trustworthy" }
+      { "trait": "friendly", "description": "Acessível e caloroso" },
+      { "trait": "expert", "description": "Conhecedor mas não condescendente" },
+      { "trait": "authentic", "description": "Genuíno e confiável" }
     ],
     "tone_spectrum": {
       "formality": 2,
@@ -175,606 +175,606 @@ vs {competitor_2}: {brand_owns}
   },
   
   "language": {
-    "use_words": ["you", "your", "we", "help", "easy", "simple", "results"],
-    "avoid_words": ["cheap", "basic", "average", "complicated", "difficult"],
+    "use_words": ["você", "seu", "nós", "ajudar", "fácil", "simples", "resultados"],
+    "avoid_words": ["barato", "básico", "médio", "complicado", "difícil"],
     "phrases": [
-      "{phrase_1}",
-      "{phrase_2}",
-      "{phrase_3}"
+      "{frase_1}",
+      "{frase_2}",
+      "{frase_3}"
     ]
   },
   
   "copy_guidelines": {
-    "headline_style": "benefit-focused, question-driven",
-    "headline_length": "30-50 characters",
-    "primary_text_length": "90-150 characters for primary",
-    "cta_style": "action-oriented, benefit-linked",
-    "ctas": ["Shop Now", "Learn More", "Get Started", "See Results"]
+    "headline_style": "focado em benefícios, orientado a perguntas",
+    "headline_length": "30-50 caracteres",
+    "primary_text_length": "90-150 caracteres para principal",
+    "cta_style": "orientado a ação, ligado a benefícios",
+    "ctas": ["Compre Agora", "Saiba Mais", "Começar", "Ver Resultados"]
   },
   
   "emotional_appeals": [
-    { "priority": 1, "emotion": "achievement", "style": "Show transformation" },
-    { "priority": 2, "emotion": "belonging", "style": "Community focus" },
-    { "priority": 3, "emotion": "security", "style": "Trust and reliability" }
+    { "priority": 1, "emotion": "realização", "style": "Mostrar transformação" },
+    { "priority": 2, "emotion": "pertencimento", "style": "Foco em comunidade" },
+    { "priority": 3, "emotion": "segurança", "style": "Confiança e confiabilidade" }
   ],
   
   "differentiation": {
-    "{competitor_1}": "{our_advantage}",
-    "{competitor_2}": "{our_advantage}"
+    "{concorrente_1}": "{nossa_vantagem}",
+    "{concorrente_2}": "{nossa_vantagem}"
   },
   
   "dos": [
-    "Use numbers and specific results",
-    "Address the customer directly",
-    "Include social proof when available"
+    "Usar números e resultados específicos",
+    "Abordar o cliente diretamente",
+    "Incluir prova social quando disponível"
   ],
   
   "donts": [
-    "Avoid superlatives without proof",
-    "Don't use jargon without explanation",
-    "Never make claims you can't back up"
+    "Evitar superlativos sem prova",
+    "Não usar jargão sem explicação",
+    "Nunca fazer afirmações que não possa comprovar"
   ]
 }
 ```
 
 ---
 
-## ✍️ Phase 2: Copy Generation
+## ✍️ Fase 2: Geração de Copy
 
-### 2.1 Copy Generation Framework
+### 2.1 Framework de Geração de Copy
 
 ```markdown
-=== AD COPY GENERATION ===
+=== GERAÇÃO DE COPY DE ANÚNCIO ===
 
-USING BRAND VOICE:
-├── Tone: {tone_spectrum}
-├── Style: {copy_guidelines}
-├── CTAs: {cta_options}
-└── Emotions: {emotional_appeals}
+USANDO VOZ DA MARCA:
+├── Tom: {espectro_tom}
+├── Estilo: {diretrizes_copy}
+├── CTAs: {opcoes_cta}
+└── Emoções: {apelos_emocionais}
 
-FROM BRIEFING:
+DO BRIEFING:
 ├── USP 1: {usp_1}
 ├── USP 2: {usp_2}
 ├── USP 3: {usp_3}
-├── Audience: {audience}
-├── Objective: {objective}
-└── Landing Page: {landing_url}
+├── Público: {publico}
+├── Objetivo: {objetivo}
+└── Landing Page: {url_landing}
 
 ```
 
-### 2.2 Feed Copy Format (Primary)
+### 2.2 Formato de Copy para Feed (Principal)
 
 ```markdown
-## FEED AD COPY
+## COPY PARA FEED AD
 
-### Variant A: Problem-Solution Angle
+### Variante A: Ângulo Problema-Solução
 
 PRIMARY TEXT (90-150 chars):
-{problem_statement_on_brand_voice}
+{declaracao_problema_na_voz_da_marca}
 
-PRIMARY TEXT LONG (max 300 chars):
-{expanded_problem_and_solution}
-{social_proof_or_benefit}
-{cta_reinforcement}
+PRIMARY TEXT LONG (máx 300 chars):
+{problema_expandido_e_solucao}
+{prova_social_ou_beneficio}
+{reforco_cta}
 
 HEADLINE (30-40 chars):
-{hook_question_or_statement}
+{gancho_pergunta_ou_declaracao}
 
 DESCRIPTION (25-30 chars):
-{supporting_detail}
+{detalhe_de_apoio}
 
-CTA: {cta_button}
+CTA: {botao_cta}
 
 ---
 
-### Variant B: Benefit-First Angle
+### Variante B: Ângulo Benefício-Primeiro
 
 PRIMARY TEXT (90-150 chars):
-{leading_benefit_in_brand_voice}
+{beneficio_lider_na_voz_da_marca}
 
-PRIMARY TEXT LONG (max 300 chars):
-{benefit_expansion}
-{how_it_works_brief}
-{what_to_expect}
+PRIMARY TEXT LONG (máx 300 chars):
+{expansao_beneficio}
+{como_funciona_breve}
+{o_que_esperar}
 
 HEADLINE (30-40 chars):
-{benefit_headline}
+{headline_beneficio}
 
 DESCRIPTION (25-30 chars):
-{benefit_detail}
+{detalhe_beneficio}
 
-CTA: {cta_button}
+CTA: {botao_cta}
 
 ---
 
-### Variant C: Social Proof Angle
+### Variante C: Ângulo Prova Social
 
 PRIMARY TEXT (90-150 chars):
-{social_proof_leadin_brand_voice}
+{introducao_prova_social_na_voz_da_marca}
 
-PRIMARY TEXT LONG (max 300 chars):
-{proof_points}
-{results_or_testimonial}
-{call_to_action}
+PRIMARY TEXT LONG (máx 300 chars):
+{pontos_de_prova}
+{resultados_ou_depoimento}
+{chamada_para_acao}
 
 HEADLINE (30-40 chars):
-{proof_headline}
+{headline_prova}
 
 DESCRIPTION (25-30 chars):
-{proof_detail}
+{detalhe_prova}
 
-CTA: {cta_button}
+CTA: {botao_cta}
 ```
 
-### 2.3 Stories Copy Format
+### 2.3 Formato de Copy para Stories
 
 ```markdown
-## STORIES AD COPY
+## COPY PARA STORIES AD
 
-### Stories are 15s max - Be Punchy!
+### Stories têm máximo 15s - Seja Direto!
 
-### Variant A: Hook + CTA
+### Variante A: Gancho + CTA
 
 TEXT OVERLAY (Frame 1-2):
-{attention_hook}
+{gancho_atencao}
 
 TEXT OVERLAY (Frame 3-4):
-{key_benefit}
+{beneficio_chave}
 
 TEXT OVERLAY (Frame 5):
-{cta_text}
+{texto_cta}
 
-CAPTION (30 chars max):
-{caption}
+CAPTION (30 chars máx):
+{legenda}
 
 ---
 
-### Variant B: Demo + Result
+### Variante B: Demo + Resultado
 
 TEXT OVERLAY (Frame 1):
-{problem_or_before}
+{problema_ou_antes}
 
 TEXT OVERLAY (Frame 2-3):
-{solution_demo}
+{demo_solucao}
 
 TEXT OVERLAY (Frame 4-5):
-{after_result} + {cta}
+{depois_resultado} + {cta}
 
-CAPTION (30 chars max):
-{caption}
+CAPTION (30 chars máx):
+{legenda}
 ```
 
-### 2.4 Reels Copy Format
+### 2.4 Formato de Copy para Reels
 
 ```markdown
-## REELS AD COPY
+## COPY PARA REELS AD
 
-### Reels can be 15-60s - Tell a Story!
+### Reels podem ter 15-60s - Conte uma História!
 
-### Variant A: Story Arc
+### Variante A: Arco Narrativo
 
 HOOK (0-3s):
-{attention_grabbing_statement}
+{declaracao_gancho_atencao}
 
-PROBLEM (3-10s):
-{relatable_problem_in_brand_voice}
+PROBLEMA (3-10s):
+{problema_relacionavel_na_voz_da_marca}
 
-SOLUTION (10-25s):
-{your_solution_explained}
+SOLUÇÃO (10-25s):
+{sua_solucao_explicada}
 
-PROOF (25-40s):
-{demonstration_or_testimonial}
+PROVA (25-40s):
+{demonstracao_ou_depoimento}
 
 CTA (40-60s):
-{clear_call_to_action}
+{chamada_clara_para_acao}
 
 ---
 
-### Variant B: Quick Tutorial
+### Variante B: Tutorial Rápido
 
 HOOK (0-3s):
-{youll_learn_statement}
+{declaracao_voce_aprendera}
 
-STEP 1 (3-15s):
-{first_step}
+PASSO 1 (3-15s):
+{primeiro_passo}
 
-STEP 2 (15-30s):
-{second_step}
+PASSO 2 (15-30s):
+{segundo_passo}
 
-RESULT (30-45s):
-{achieved_result}
+RESULTADO (30-45s):
+{resultado_alcancado}
 
 CTA (45-60s):
-{cta_with_benefit}
+{cta_com_beneficio}
 ```
 
-### 2.5 Carousel Copy Format
+### 2.5 Formato de Copy para Carousel
 
 ```markdown
-## CAROUSEL AD COPY
+## COPY PARA CAROUSEL AD
 
-### Each card tells part of the story
+### Cada card conta parte da história
 
-HEADLINE (Overall): {carousel_headline}
+HEADLINE (Geral): {headline_carousel}
 
-CARD 1: Introduction
-├── Headline: {card1_headline}
-├── Description: {card1_description}
+CARD 1: Introdução
+├── Headline: {headline_card1}
+├── Description: {descricao_card1}
 └── Image: ad_03_carousel_01.jpg
 
-CARD 2: Problem/Need
-├── Headline: {card2_headline}
-├── Description: {card2_description}
+CARD 2: Problema/Necessidade
+├── Headline: {headline_card2}
+├── Description: {descricao_card2}
 └── Image: ad_03_carousel_02.jpg
 
-CARD 3: Solution
-├── Headline: {card3_headline}
-├── Description: {card3_description}
+CARD 3: Solução
+├── Headline: {headline_card3}
+├── Description: {descricao_card3}
 └── Image: ad_03_carousel_03.jpg
 
-CARD 4 (optional): Proof
-├── Headline: {card4_headline}
-├── Description: {card4_description}
+CARD 4 (opcional): Prova
+├── Headline: {headline_card4}
+├── Description: {descricao_card4}
 └── Image: ad_03_carousel_04.jpg
 
-CARD 5 (optional): CTA
-├── Headline: {card5_headline}
-├── Description: {card5_description}
+CARD 5 (opcional): CTA
+├── Headline: {headline_card5}
+├── Description: {descricao_card5}
 └── Image: ad_03_carousel_05.jpg
 
 PRIMARY TEXT (Carousel):
-{carousel_primary_text}
+{texto_principal_carousel}
 
 DESCRIPTION (Carousel):
-{carousel_description}
+{descricao_carousel}
 ```
 
 ---
 
-## 🎨 Phase 3: Copy Principles by Objective
+## 🎨 Fase 3: Princípios de Copy por Objetivo
 
-### 3.1 Sales/Conversions
+### 3.1 Vendas/Conversões
 
 ```markdown
-=== SALES COPY PRINCIPLES ===
+=== PRINCÍPIOS DE COPY PARA VENDAS ===
 
-TONE:
-├── Urgent but not pushy
-├── Benefit-focused
-├── Clear value proposition
-└── Strong CTA
+TOM:
+├── Urgente mas não agressivo
+├── Focado em benefícios
+├── Proposta de valor clara
+└── CTA forte
 
-FORMULAS:
-├── PAS (Problem-Agitate-Solution)
-├── AIDA (Attention-Interest-Desire-Action)
-└── FAB (Features-Advantages-Benefits)
+FÓRMULAS:
+├── PAS (Problema-Agitar-Solução)
+├── AIDA (Atenção-Interesse-Desejo-Ação)
+└── FAB (Características-Vantagens-Benefícios)
 
-EXAMPLE STRUCTURES:
+ESTRUTURAS DE EXEMPLO:
 
-PROBLEM-FOCUSED:
-"Still struggling with {problem}?
-{Product} helps you {benefit} in {timeframe}.
-{Proof point}
+FOCADO EM PROBLEMA:
+"Ainda lutando com {problema}?
+{Produto} ajuda você a {beneficio} em {tempo}.
+{Ponto de prova}
 [CTA]"
 
-BENEFIT-FOCUSED:
-"Get {result} with {product}.
-{Key benefit 1}.
-{Key benefit 2}.
-See why {proof}.
+FOCADO EM BENEFÍCIO:
+"Obtenha {resultado} com {produto}.
+{Benefício chave 1}.
+{Benefício chave 2}.
+Veja por que {prova}.
 [CTA]"
 
-SOCIAL PROOF:
-"{Number} people achieved {result}.
-Now it's your turn.
-{Product} {key promise}.
+PROVA SOCIAL:
+"{Número} pessoas alcançaram {resultado}.
+Agora é sua vez.
+{Produto} {promessa chave}.
 [CTA]"
 ```
 
-### 3.2 Lead Generation
+### 3.2 Geração de Leads
 
 ```markdown
-=== LEADS COPY PRINCIPLES ===
+=== PRINCÍPIOS DE COPY PARA LEADS ===
 
-TONE:
-├── Helpful and educational
-├── Low commitment
-├── Value-first approach
-└── Clear but soft CTA
+TOM:
+├── Útil e educativo
+├── Baixo comprometimento
+├── Abordagem valor-primeiro
+└── CTA claro mas suave
 
-FORMULAS:
-├── Value exchange (Give something, get email)
-├── Problem solution (Address pain, offer help)
-└── Educational (Teach something, capture lead)
+FÓRMULAS:
+├── Troca de valor (Dar algo, receber email)
+├── Solução de problema (Abordar dor, oferecer ajuda)
+└── Educacional (Ensinar algo, capturar lead)
 
-EXAMPLE STRUCTURES:
+ESTRUTURAS DE EXEMPLO:
 
-VALUE EXCHANGE:
-"Free {resource}: {title}
-Learn how to {benefit}.
-{What they'll learn}
-[Download Free Guide]"
+TROCA DE VALOR:
+"Gratuito {recurso}: {título}
+Aprenda como {beneficio}.
+{O que vão aprender}
+[Baixar Guia Gratuito]"
 
-EDUCATIONAL:
-"Want to {achieve goal}?
-Here's what works in {year}.
-{Key insight}
-[Get Free Tips]"
+EDUCACIONAL:
+"Quer {alcançar objetivo}?
+Aqui está o que funciona em {ano}.
+{Insight chave}
+[Receber Dicas Gratuitas]"
 
-PROBLEM-SOLUTION:
-"Struggling with {problem}?
-Our {solution} can help.
-{No commitment}
-[Get Free Consultation]"
+PROBLEMA-SOLUÇÃO:
+"Lutando com {problema}?
+Nossa {solução} pode ajudar.
+{Sem compromisso}
+[Receber Consulta Gratuita]"
 ```
 
-### 3.3 Traffic
+### 3.3 Tráfego
 
 ```markdown
-=== TRAFFIC COPY PRINCIPLES ===
+=== PRINCÍPIOS DE COPY PARA TRÁFEGO ===
 
-TONE:
-├── Intriguing and curiosity-driven
-├── Promise value
-├── Clear destination
-└── Relevant to landing page
+TOM:
+├── Intrigante e orientado a curiosidade
+├── Prometer valor
+├── Destino claro
+└── Relevante para a landing page
 
-FORMULAS:
-├── Curiosity gap (Open loop)
-├── List/Article (X things to know)
-└── How-to (Learn to do something)
+FÓRMULAS:
+├── Lacuna de curiosidade (Loop aberto)
+├── Lista/Artigo (X coisas para saber)
+└── How-to (Aprender a fazer algo)
 
-EXAMPLE STRUCTURES:
+ESTRUTURAS DE EXEMPLO:
 
-CURIOSITY:
-"{Interesting fact about topic}.
-What happens next will surprise you.
-[Learn More]"
+CURIOSIDADE:
+"{Fato interessante sobre tópico}.
+O que acontece depois vai te surpreender.
+[Saiba Mais]"
 
-LIST:
-"{Number} {benefit} secrets for {audience}.
+LISTA:
+"{Número} segredos de {beneficio} para {público}.
 {Teaser 1}.
 {Teaser 2}.
-[See Full List]"
+[Ver Lista Completa]"
 
 HOW-TO:
-"How to {achieve result} in {timeframe}.
-{Brief promise}.
-{No registration needed}.
-[Read Article]"
+"Como {alcançar resultado} em {tempo}.
+{Promessa breve}.
+{Sem necessidade de registro}.
+[Ler Artigo]"
 ```
 
-### 3.4 Awareness
+### 3.4Awareness
 
 ```markdown
-=== AWARENESS COPY PRINCIPLES ===
+=== PRINCÍPIOS DE COPY PARA AWARENESS ===
 
-TONE:
-├── Story-driven
-├── Emotional connection
-├── Brand values highlight
-└── Memorable and shareable
+TOM:
+├── Orientado a história
+├── Conexão emocional
+├── Destaque de valores da marca
+└── Memorável e compartilhável
 
-FORMULAS:
-├── Brand story (Your journey)
-├── Values connection (Shared beliefs)
-└── Emotional appeal (Feel something)
+FÓRMULAS:
+├── História da marca (Sua jornada)
+├── Conexão de valores (Crenças compartilhadas)
+└── Apelo emocional (Sentir algo)
 
-EXAMPLE STRUCTURES:
+ESTRUTURAS DE EXEMPLO:
 
-STORY:
-"{Brand story opening}.
-{The challenge}.
-{The breakthrough}.
-{What we learned}.
-{How we help you}.
-[Learn Our Story]"
+HISTÓRIA:
+"{Abertura da história da marca}.
+{O desafio}.
+{A descoberta}.
+{O que aprendemos}.
+{Como ajudamos você}.
+[Conheça Nossa História]"
 
-VALUES:
-"We believe {value statement}.
-{Why it matters}.
-{How we live it}.
-{Join us}.
-[See How]"
+VALORES:
+"Acreditamos {declaração de valor}.
+{Por que importa}.
+{Como vivemos isso}.
+{Junte-se a nós}.
+[Veja Como]"
 
-EMOTIONAL:
-"{Emotional statement}.
-{Why we care}.
-{What we're doing}.
-{How you can help}.
-[Learn More]"
-```
-
----
-
-## 📊 Phase 4: A/B Testing Variations
-
-### 4.1 Copy Testing Framework
-
-```markdown
-=== A/B TESTING FRAMEWORK ===
-
-For each creative, generate 3 variations:
-
-VARIATION STRUCTURE:
-├── Control (Best practice)
-├── Variant A (Different angle)
-└── Variant B (Different CTA)
-
-TEST DIMENSIONS:
-├── Hook type (Question/Statement/Number)
-├── Emotional appeal (Achievement/Belonging/Security)
-├── CTA wording (Action/Benefit/Urgency)
-├── Length (Short/Medium/Long)
-└── Proof type (Stat/Testimonial/Case Study)
-```
-
-### 4.2 Testing Matrix
-
-```markdown
-=== COPY TESTING MATRIX ===
-
-CREATIVE 1: Feed Image
-├── CONTROL: {problem_solution_copy}
-├── VAR A: {benefit_first_copy}
-├── VAR B: {social_proof_copy}
-├── Test: Angle effectiveness
-└── Duration: 7 days
-
-CREATIVE 2: Feed Video
-├── CONTROL: {story_arc_copy}
-├── VAR A: {demo_copy}
-├── VAR B: {testimonial_copy}
-├── Test: Content type effectiveness
-└── Duration: 7 days
-
-CREATIVE 3: Stories
-├── CONTROL: {hook_cta_copy}
-├── VAR A: {behind_scenes_copy}
-├── VAR B: {quick_tip_copy}
-├── Test: Format engagement
-└── Duration: 7 days
-
-HEADLINE TEST:
-├── CONTROL: {question_headline}
-├── VAR A: {number_headline}
-├── VAR B: {benefit_headline}
-└── Test: Headline type
-
-CTA TEST:
-├── CONTROL: "Shop Now"
-├── VAR A: "Get {Benefit}"
-├── VAR B: "See Results"
-└── Test: CTA effectiveness
+EMOCIONAL:
+"{Declaração emocional}.
+{Por que nos importamos}.
+{O que estamos fazendo}.
+{Como você pode ajudar}.
+[Saiba Mais]"
 ```
 
 ---
 
-## 🔄 Phase 5: Copy Refinement
+## 📊 Fase 4: Variações para Testes A/B
 
-### 5.1 Copy Review Checklist
+### 4.1 Framework de Testes de Copy
 
 ```markdown
-=== COPY REVIEW CHECKLIST ===
+=== FRAMEWORK DE TESTES A/B ===
 
-BRAND VOICE ALIGNMENT:
-├── [✅/❌] Matches brand personality?
-├── [✅/❌] Uses brand language correctly?
-├── [✅/❌] Avoids prohibited words?
-├── [✅/❌] Appropriate formality level?
-└── [✅/❌] Consistent with previous campaigns?
+Para cada criativo, gerar 3 variações:
 
-CLARITY & IMPACT:
-├── [✅/❌] Clear value proposition?
-├── [✅/❌] Strong hook?
-├── [✅/❌] Specific benefits (not vague)?
-├── [✅/❌] Credible claims?
-└── [✅/❌] Strong CTA?
+ESTRUTURA DE VARIAÇÃO:
+├── Controle (Melhor prática)
+├── Variante A (Ângulo diferente)
+└── Variante B (CTA diferente)
 
-PLATFORM FIT:
-├── [✅/❌] Correct character limits?
-├── [✅/❌] Appropriate for placement?
-├── [✅/❌] Optimized for mobile?
-└── [✅/❌] Visual-friendly text?
-
-COMPLIANCE:
-├── [✅/❌] No false claims?
-├── [✅/❌] Proper disclaimers?
-├── [✅/❌] Follows platform guidelines?
-└── [✅/❌] Respects character limits?
+DIMENSÕES DE TESTE:
+├── Tipo de gancho (Pergunta/Declaração/Número)
+├── Apelo emocional (Realização/Pertencimento/Segurança)
+├── Redação do CTA (Ação/Benefício/Urgência)
+├── Tamanho (Curto/Médio/Longo)
+└── Tipo de prova (Stat/Depoimento/Case Study)
 ```
 
-### 5.2 Copy Optimization
+### 4.2 Matriz de Testes
 
 ```markdown
-=== COPY OPTIMIZATION ===
+=== MATRIZ DE TESTES DE COPY ===
 
-WEAK COPY:
-"Cheap shoes for sale. Buy now."
-└── Issues: Generic, no benefit, pushy CTA
+CRIATIVO 1: Feed Image
+├── CONTROLE: {copy_problema_solução}
+├── VAR A: {copy_benefício_primeiro}
+├── VAR B: {copy_prova_social}
+├── Teste: Efetividade do ângulo
+└── Duração: 7 dias
 
-OPTIMIZED COPY:
-"Walk in comfort all day. Our arch-support
-shoes reduce foot pain by 73%.
-2,500+ happy customers. Free returns.
-[Shop Collection]"
-└── Improvements: Benefit-focused, specific stat, 
-                    social proof, risk reversal, soft CTA
+CRIATIVO 2: Feed Video
+├── CONTROLE: {copy_arco_narrativo}
+├── VAR A: {copy_demo}
+├── VAR B: {copy_depoimento}
+├── Teste: Efetividade do tipo de conteúdo
+└── Duração: 7 dias
+
+CRIATIVO 3: Stories
+├── CONTROLE: {copy_gancho_cta}
+├── VAR A: {copy_bastidores}
+├── VAR B: {copy_dica_rapida}
+├── Teste: Engajamento por formato
+└── Duração: 7 dias
+
+TESTE DE HEADLINE:
+├── CONTROLE: {headline_pergunta}
+├── VAR A: {headline_número}
+├── VAR B: {headline_benefício}
+└── Teste: Tipo de headline
+
+TESTE DE CTA:
+├── CONTROLE: "Compre Agora"
+├── VAR A: "Obtenha {Benefício}"
+├── VAR B: "Ver Resultados"
+└── Teste: Efetividade do CTA
 ```
 
 ---
 
-## 📝 Phase 6: Copy Storage
+## 🔄 Fase 5: Refinamento de Copy
 
-### 6.1 Save Copy to Campaign Folder
+### 5.1 Checklist de Revisão de Copy
 
 ```markdown
-Create: /campanhas/{cliente}/{mes}/{campanha}/copy_variants.md
+=== CHECKLIST DE REVISÃO DE COPY ===
+
+ALINHAMENTO COM VOZ DA MARCA:
+├── [✅/❌] Corresponde à personalidade da marca?
+├── [✅/❌] Usa linguagem da marca corretamente?
+├── [✅/❌] Evita palavras proibidas?
+├── [✅/❌] Nível de formalidade apropriado?
+└── [✅/❌] Consistente com campanhas anteriores?
+
+CLAREZA & IMPACTO:
+├── [✅/❌] Proposta de valor clara?
+├── [✅/❌] Gancho forte?
+├── [✅/❌] Benefícios específicos (não vagos)?
+├── [✅/❌] Alegações críveis?
+└── [✅/❌] CTA forte?
+
+ADEQUAÇÃO À PLATAFORMA:
+├── [✅/❌] Limites de caracteres corretos?
+├── [✅/❌] Apropriado para posicionamento?
+├── [✅/❌] Otimizado para mobile?
+└── [✅/❌] Texto amigável para visual?
+
+CONFORMIDADE:
+├── [✅/❌] Sem alegações falsas?
+├── [✅/❌] Disclaimers adequados?
+├── [✅/❌] Segue diretrizes da plataforma?
+└── [✅/❌] Respeita limites de caracteres?
 ```
 
-### 6.2 Copy Template for Storage
+### 5.2 Otimização de Copy
 
 ```markdown
-# Ad Copy Variants - {Campaign Name}
+=== OTIMIZAÇÃO DE COPY ===
 
-Generated: {datetime}
-Brand Voice: {voice_profile_name}
+COPY FRACA:
+"Sapatos baratos à venda. Compre agora."
+└── Problemas: Genérico, sem benefício, CTA agressivo
+
+COPY OTIMIZADA:
+"Caminhe com conforto o dia todo. Nossos sapatos com
+suporte de arco reduzem dor nos pés em 73%.
+2.500+ clientes satisfeitos. Troca grátis.
+[Ver Coleção]"
+└── Melhorias: Focado em benefício, estatística específica,
+                    prova social, redução de risco, CTA suave
+```
 
 ---
 
-## Brand Voice Summary
+## 📝 Fase 6: Armazenamento de Copy
 
-**Tone:** {tone_description}
-**Style:** {style_description}
-**CTAs:** {cta_options}
+### 6.1 Salvar Copy na Pasta da Campanha
+
+```markdown
+Criar: /campanhas/{cliente}/{mes}/{campanha}/copy_variants.md
+```
+
+### 6.2 Template de Copy para Armazenamento
+
+```markdown
+# Variantes de Ad Copy - {Nome da Campanha}
+
+Gerado: {data_hora}
+Voz da Marca: {nome_perfil_voz}
+
+---
+
+## Resumo da Voz da Marca
+
+**Tom:** {descricao_tom}
+**Estilo:** {descricao_estilo}
+**CTAs:** {opcoes_cta}
 
 ---
 
 ## Feed Ad Copy
 
-### Creative 1: ad_01_feed_image.jpg / ad_01_feed_video.mp4
+### Criativo 1: ad_01_feed_image.jpg / ad_01_feed_video.mp4
 
-#### Variant A: {Angle Name}
+#### Variante A: {Nome do Ângulo}
 **PRIMARY TEXT:**
-{primary_text}
+{texto_principal}
 
 **HEADLINE:**
 {headline}
 
 **DESCRIPTION:**
-{description}
+{descricao}
 
 **CTA:** {cta}
 
-#### Variant B: {Angle Name}
-[Same structure]
+#### Variante B: {Nome do Ângulo}
+[Mesma estrutura]
 
-#### Variant C: {Angle Name}
-[Same structure]
+#### Variante C: {Nome do Ângulo}
+[Mesma estrutura]
 
 ---
 
 ## Stories Copy
 
-### Creative 2: ad_02_story_video.mp4
+### Criativo 2: ad_02_story_video.mp4
 
-#### Variant A: Hook + CTA
-**OVERLAY 1:** {text_1}
-**OVERLAY 2:** {text_2}
-**OVERLAY 3:** {text_3}
+#### Variante A: Gancho + CTA
+**OVERLAY 1:** {texto_1}
+**OVERLAY 2:** {texto_2}
+**OVERLAY 3:** {texto_3}
 
-**CAPTION:** {caption}
+**CAPTION:** {legenda}
 
-#### Variant B: Demo + Result
-[Same structure]
+#### Variante B: Demo + Resultado
+[Mesma estrutura]
 
 ---
 
 ## Carousel Copy
 
-### Creative 3: ad_03_carousel_*.jpg
+### Criativo 3: ad_03_carousel_*.jpg
 
-**HEADLINE:** {carousel_headline}
+**HEADLINE:** {headline_carousel}
 
 **CARD 1:**
 - Headline: {card1_h}
@@ -788,106 +788,106 @@ Brand Voice: {voice_profile_name}
 - Headline: {card3_h}
 - Description: {card3_d}
 
-**PRIMARY TEXT:** {primary}
+**PRIMARY TEXT:** {principal}
 **DESCRIPTION:** {desc}
 
 ---
 
-## Testing Recommendations
+## Recomendações de Teste
 
-| Test | Control | Variant A | Variant B | Duration |
-|------|---------|-----------|-----------|----------|
-| Hook | Question | Statement | Number | 7 days |
-| CTA | Shop Now | Get Offer | See Results | 7 days |
-| Proof | Statistic | Testimonial | Before/After | 7 days |
+| Teste | Controle | Variante A | Variante B | Duração |
+|-------|----------|------------|------------|---------|
+| Gancho | Pergunta | Declaração | Número | 7 dias |
+| CTA | Compre Agora | Obter Oferta | Ver Resultados | 7 dias |
+| Prova | Estatística | Depoimento | Antes/Depois | 7 dias |
 ```
 
 ---
 
-## 🔗 Phase 7: Integration with meta-ads-manager
+## 🔗 Fase 7: Integração com meta-ads-manager
 
-### 7.1 Handoff Process
+### 7.1 Processo de Handoff
 
 ```markdown
-=== COPY HANDOFF TO META ADS MANAGER ===
+=== HANDOFF DE COPY PARA META ADS MANAGER ===
 
-BRAND VOICE PROFILE:
-├── Location: /campanhas/{cliente}/brand_voice.json
-├── Created: {datetime}
-└── Tone: {tone_summary}
+PERFIL DA VOZ DA MARCA:
+├── Localização: /campanhas/{cliente}/brand_voice.json
+├── Criado: {data_hora}
+└── Tom: {resumo_tom}
 
-COPY VARIANTS:
-├── Location: /campanhas/{cliente}/{mes}/{campanha}/copy_variants.md
-├── Feed: 3 variants × 3 angles = 9 options
-├── Stories: 2 variants
-└── Carousel: 1 complete set
+VARIANTES DE COPY:
+├── Localização: /campanhas/{cliente}/{mes}/{campanha}/copy_variants.md
+├── Feed: 3 variantes × 3 ângulos = 9 opções
+├── Stories: 2 variantes
+└── Carousel: 1 conjunto completo
 
-RECOMMENDED FOR LAUNCH:
-├── Feed: Variant A (Control)
-├── Stories: Variant A (Hook + CTA)
-└── Carousel: Full set
+RECOMENDADO PARA LANÇAMENTO:
+├── Feed: Variante A (Controle)
+├── Stories: Variante A (Gancho + CTA)
+└── Carousel: Conjunto completo
 
-A/B TEST PLAN:
-├── Week 1: Control vs Variant A
-├── Week 2: Winner vs Variant B
-└── Week 3: Optimize winner
+PLANO DE TESTE A/B:
+├── Semana 1: Controle vs Variante A
+├── Semana 2: Vencedor vs Variante B
+└── Semana 3: Otimizar vencedor
 
-META ADS MANAGER WILL:
-1. Read copy_variants.md
-2. Use brand_voice.json for consistency
-3. Create ad structure
-4. Upload to Meta
+META ADS MANAGER VAI:
+1. Ler copy_variants.md
+2. Usar brand_voice.json para consistência
+3. Criar estrutura de anúncio
+4. Fazer upload para Meta
 ```
 
 ---
 
-## 📋 Phase 8: Quick Commands
+## 📋 Fase 8: Comandos Rápidos
 
-| Command | Description |
-|---------|-------------|
-| `analisa voz {cliente}` | Analyze brand voice from briefing |
-| `cria copy {cliente}` | Generate ad copy with brand voice |
-| `variantes {cliente}` | Create A/B testing variations |
-| `ajusta tom {cliente}` | Adjust tone based on feedback |
-| `exporta copy {cliente}` | Export copy to markdown |
-
----
-
-## ⚠️ Important Notes
-
-1. **Always check for existing brand_voice.json** - Don't recreate if exists
-2. **Stay on brand** - Never deviate from established voice
-3. **Platform-specific copy** - Different lengths for Feed, Stories, Reels
-4. **A/B test everything** - Always create variations
-5. **Link to landing page** - Copy must match landing page messaging
-6. **Character limits** - Respect platform limits strictly
+| Comando | Descrição |
+|---------|------------|
+| `analisa voz {cliente}` | Analisar voz da marca a partir do briefing |
+| `cria copy {cliente}` | Gerar copy de anúncio com voz da marca |
+| `variantes {cliente}` | Criar variações para teste A/B |
+| `ajusta tom {cliente}` | Ajustar tom baseado em feedback |
+| `exporta copy {cliente}` | Exportar copy para markdown |
 
 ---
 
-## 📏 Character Limits Reference
+## ⚠️ Notas Importantes
 
-| Platform | Placement | Primary Text | Headline | Description |
-|----------|-----------|--------------|----------|-------------|
-| Facebook | Feed |90-150 chars | 40 chars | 30 chars |
-| Facebook | Feed (Long) |125-300 chars | 40 chars | 30 chars |
-| Instagram | Feed |125 chars | 40 chars | 30 chars |
+1. **Sempre verificar se brand_voice.json existe** - Não recriar se já existe
+2. **Mantenha-se na marca** - Nunca desviar da voz estabelecida
+3. **Copy específica por plataforma** - Tamanhos diferentes para Feed, Stories, Reels
+4. **Teste A/B de tudo** - Sempre criar variações
+5. **Link para landing page** - Copy deve corresponder à mensagem da landing page
+6. **Limites de caracteres** - Respeitar limites da plataforma estritamente
+
+---
+
+## 📏 Referência de Limites de Caracteres
+
+| Plataforma | Posicionamento | Primary Text | Headline | Description |
+|------------|----------------|--------------|----------|-------------|
+| Facebook | Feed | 90-150 chars | 40 chars | 30 chars |
+| Facebook | Feed (Longo) | 125-300 chars | 40 chars | 30 chars |
+| Instagram | Feed | 125 chars | 40 chars | 30 chars |
 | Instagram | Stories | 15-25 chars | N/A | N/A |
 | Instagram | Reels | N/A | 15-25 chars | N/A |
-| Carousel | All | 90-150 chars | 40 chars | 30 chars |
+| Carousel | Todos | 90-150 chars | 40 chars | 30 chars |
 
 ---
 
-## 🎯 Quality Checklist
+## 🎯 Checklist de Qualidade
 
-Before delivering copy, verify:
+Antes de entregar a copy, verifique:
 
-- [ ] Matches brand voice profile
-- [ ] Under character limits
-- [ ] Clear value proposition
-- [ ] Strong CTA
-- [ ] Matches landing page
-- [ ] Platform-appropriate
-- [ ] A/B testing variants created
-- [ ] Emotional appeal is clear
-- [ ] No prohibited words
-- [ ] Compliant with policies
+- [ ] Corresponde ao perfil da voz da marca
+- [ ] Dentro dos limites de caracteres
+- [ ] Proposta de valor clara
+- [ ] CTA forte
+- [ ] Corresponde à landing page
+- [ ] Apropriado para a plataforma
+- [ ] Variantes A/B criadas
+- [ ] Apelo emocional é claro
+- [ ] Sem palavras proibidas
+- [ ] Conforme políticas

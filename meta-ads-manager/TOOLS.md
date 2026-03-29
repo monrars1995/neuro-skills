@@ -1,273 +1,273 @@
-# Meta Ads Manager - Tools & Commands
+# Meta Ads Manager - Ferramentas e Comandos
 
-## Quick Reference
+## Referência Rápida
 
-### File Locations
+### Localizações dos Arquivos
 
-| What | Where |
-|------|-------|
-| Saved Accounts | `~/.meta-ads-manager/accounts.json` |
-| Session Data | `~/.meta-ads-manager/session.json` |
-| Campaign Folders | `/campanhas/{cliente}/{mes}/{campanha}/` |
-| Briefing File | `/campanhas/{cliente}/{mes}/{campanha}/briefing.md` |
-| Creatives | `/campanhas/{cliente}/{mes}/{campanha}/ad_XX_XX.XXX` |
-| Results | `/campanhas/{cliente}/{mes}/{campanha}/resultados.md` |
+| O Que | Onde |
+|-------|------|
+| Contas Salvas | `~/.meta-ads-manager/accounts.json` |
+| Dados de Sessão | `~/.meta-ads-manager/session.json` |
+| Pastas de Campanhas | `/campanhas/{cliente}/{mes}/{campanha}/` |
+| Arquivo de Briefing | `/campanhas/{cliente}/{mes}/{campanha}/briefing.md` |
+| Criativos | `/campanhas/{cliente}/{mes}/{campanha}/ad_XX_XX.XXX` |
+| Resultados | `/campanhas/{cliente}/{mes}/{campanha}/resultados.md` |
 
 ---
 
-## First Time Setup
+## Configuração Inicial
 
-### 1. Initialize Memory Storage
+### 1. Inicializar Armazenamento em Memória
 
 ```bash
-# Create memory directories
+# Criar diretórios de memória
 mkdir -p ~/.meta-ads-manager/cache/insights
 mkdir -p ~/.meta-ads-manager/cache/campaigns
 mkdir -p ~/.meta-ads-manager/logs
 
-# Initialize accounts file
+# Inicializar arquivo de contas
 echo '{"version":"1.0","accounts":{},"active_account":null}' > ~/.meta-ads-manager/accounts.json
 
-# Initialize session file
+# Inicializar arquivo de sessão
 echo '{"current_account":null,"current_campaign":null,"temp_data":{}}' > ~/.meta-ads-manager/session.json
 ```
 
-### 2. Setup Your Account
+### 2. Configurar Sua Conta
 
 ```
-Run: /meta-ads setup
+Executar: /meta-ads setup
 ```
 
-You will need:
-- Access Token (from https://developers.facebook.com/tools/explorer/)
-- Ad Account ID (from https://business.facebook.com/settings/ad-accounts)
-- Pixel ID (optional)
-- Page ID (optional)
+Você precisará de:
+- Access Token (de https://developers.facebook.com/tools/explorer/)
+- Ad Account ID (de https://business.facebook.com/settings/ad-accounts)
+- Pixel ID (opcional)
+- Page ID (opcional)
 
 ---
 
-## Campaign Folder Setup
+## Configuração de Pastas de Campanha
 
-### Create Folder Structure
+### Criar Estrutura de Pastas
 
 ```bash
-# Syntax
+# Sintaxe
 mkdir -p /campanhas/{cliente}/{YYYY-MM}/{campanha}/
 
-# Examples
+# Exemplos
 mkdir -p /campanhas/nike/2024-03/black_friday/
 mkdir -p /campanhas/fitness_app/2024-03/launch/
 mkdir -p /campanhas/local_bakery/2024-03/easter_promo/
 ```
 
-### Folder Structure
+### Estrutura de Pastas
 
 ```
 /campanhas/
-├── {cliente}/                      # Client name (lowercase, underscores)
-│   └── {YYYY-MM}/                   # Year-Month
-│       └── {campanha}/              # Campaign name (lowercase, underscores)
-│           ├── briefing.md          # REQUIRED: Campaign brief
-│           ├── analise.md           # OPTIONAL: Manager notes
-│           ├── ad_01_feed_image.jpg # Creative 1 - Feed image
-│           ├── ad_01_feed_video.mp4 # Creative 1 - Feed video
-│           ├── ad_02_story_video.mp4 # Creative 2 - Stories
-│           ├── ad_03_carousel_01.jpg # Creative 3 - Carousel card 1
-│           ├── ad_03_carousel_02.jpg # Creative 3 - Carousel card 2
-│           └── resultados.md        # CREATED: Results after launch
+├── {cliente}/                      # Nome do cliente (minúsculas, underscores)
+│   └── {YYYY-MM}/                  # Ano-Mês
+│       └── {campanha}/             # Nome da campanha (minúsculas, underscores)
+│           ├── briefing.md         # OBRIGATÓRIO: Briefing da campanha
+│           ├── analise.md          # OPCIONAL: Anotações do gerente
+│           ├── ad_01_feed_image.jpg # Criativo 1 - Imagem para Feed
+│           ├── ad_01_feed_video.mp4 # Criativo 1 - Vídeo para Feed
+│           ├── ad_02_story_video.mp4 # Criativo 2 - Stories
+│           ├── ad_03_carousel_01.jpg # Criativo 3 - Card 1 do Carrossel
+│           ├── ad_03_carousel_02.jpg # Criativo 3 - Card 2 do Carrossel
+│           └── resultados.md        # CRIADO: Resultados após o lançamento
 ```
 
-### Creative Naming Convention
+### Convenção de Nomenclatura de Criativos
 
 ```
-Format: ad_{number}_{placement}_{type}.{extension}
+Formato: ad_{número}_{posicionamento}_{tipo}.{extensão}
 
-Examples:
-ad_01_feed_image.jpg      # Creative 1, Feed, Image
-ad_01_feed_video.mp4      # Creative 1, Feed, Video
-ad_02_story_video.mp4     # Creative 2, Stories, Video
-ad_02_reels_video.mp4     # Creative 2, Reels, Video
-ad_03_carousel_01.jpg     # Creative 3, Carousel card 1
-ad_03_carousel_02.jpg     # Creative 3, Carousel card 2
+Exemplos:
+ad_01_feed_image.jpg      # Criativo 1, Feed, Imagem
+ad_01_feed_video.mp4      # Criativo 1, Feed, Vídeo
+ad_02_story_video.mp4     # Criativo 2, Stories, Vídeo
+ad_02_reels_video.mp4     # Criativo 2, Reels, Vídeo
+ad_03_carousel_01.jpg     # Criativo 3, Card 1 do Carrossel
+ad_03_carousel_02.jpg     # Criativo 3, Card 2 do Carrossel
 ```
 
-**Placements:**
-- `feed` - Facebook/Instagram Feed
-- `story` - Instagram/Facebook Stories
-- `reels` - Instagram/Facebook Reels
-- `carousel` - Carousel (multiple images)
+**Posicionamentos:**
+- `feed` - Feed do Facebook/Instagram
+- `story` - Stories do Instagram/Facebook
+- `reels` - Reels do Instagram/Facebook
+- `carousel` - Carrossel (múltiplas imagens)
 
-**Types:**
-- `image` - Static image (.jpg, .png)
-- `video` - Video file (.mp4, .mov)
+**Tipos:**
+- `image` - Imagem estática (.jpg, .png)
+- `video` - Arquivo de vídeo (.mp4, .mov)
 
 ---
 
-## Briefing Template
+## Modelo de Briefing
 
-### Create briefing.md
+### Criar briefing.md
 
 ```bash
-# Create briefing file
+# Criar arquivo de briefing
 nano /campanhas/nike/2024-03/black_friday/briefing.md
 
-# Or use any text editor
+# Ou usar qualquer editor de texto
 code /campanhas/nike/2024-03/black_friday/briefing.md
 ```
 
-### Template Content
+### Conteúdo do Modelo
 
 ```markdown
-# Campaign Briefing: {Campaign_Name}
+# Briefing da Campanha: {Nome_da_Campanha}
 
-## Client Information
-- **Client:** {Client_Name}
-- **Product/Service:** {What you're promoting}
-- **Industry:** {Industry}
-- **Brand Voice:** {Tone}
+## Informações do Cliente
+- **Cliente:** {Nome_do_Cliente}
+- **Produto/Serviço:** {O que você está promovendo}
+- **Indústria:** {Indústria}
+- **Voz da Marca:** {Tom}
 
-## Campaign Objectives
-- **Primary Goal:** [Sales/Leads/Traffic/Awareness/App Installs]
-- **Target CPA:** $XX.XX
-- **Target ROAS:** X.Xx
-- **Budget:** $X,XXX/month
+## Objetivos da Campanha
+- **Objetivo Principal:** [Vendas/Leads/Tráfego/Reconhecimento/Instalações de App]
+- **CPA Meta:** $XX.XX
+- **ROAS Meta:** X.Xx
+- **Orçamento:** $X,XXX/mês
 
-## Target Audience
-- **Age Range:** XX to XX
-- **Gender:** [All/Male/Female]
-- **Location:** [Countries, Cities]
-- **Interests:** [Interest 1, Interest 2, ...]
-- **Behaviors:** [Behavior 1, Behavior 2, ...]
+## Público-Alvo
+- **Faixa Etária:** XX a XX
+- **Gênero:** [Todos/Masculino/Feminino]
+- **Localização:** [Países, Cidades]
+- **Interesses:** [Interesse 1, Interesse 2, ...]
+- **Comportamentos:** [Comportamento 1, Comportamento 2, ...]
 
-## Unique Selling Propositions
-1. {USP 1}
-2. {USP 2}
-3. {USP 3}
+## Propostas de Valor Únicas
+1. {PVU 1}
+2. {PVU 2}
+3. {PVU 3}
 
-## Key Messages
-- **Primary:** {Main message}
-- **Secondary:** {Supporting points}
+## Mensagens-Chave
+- **Primária:** {Mensagem principal}
+- **Secundária:** {Pontos de apoio}
 
-## Creative Direction
-- **Visual Style:** {Modern/Classic/Minimal}
-- **Colors:** {Brand colors}
-- **Imagery:** {Types of images}
+## Direção Criativa
+- **Estilo Visual:** {Moderno/Clássico/Minimalista}
+- **Cores:** {Cores da marca}
+- **Imagens:** {Tipos de imagens}
 
-## Landing Page
-- **URL:** {Landing page URL}
-- **CTA:** {Call to action}
+## Página de Destino
+- **URL:** {URL da página de destino}
+- **CTA:** {Chamada para ação}
 
-## Timeline
-- **Start:** {YYYY-MM-DD}
-- **End:** {YYYY-MM-DD}
+## Cronograma
+- **Início:** {YYYY-MM-DD}
+- **Término:** {YYYY-MM-DD}
 ```
 
 ---
 
-## Commands
+## Comandos
 
-### Account Management
+### Gerenciamento de Contas
 
-| Command | Description |
-|---------|-------------|
-| `/meta-ads setup` | Initialize skill, save account credentials |
-| `/meta-ads accounts list` | List all saved accounts |
-| `/meta-ads accounts add {name}` | Add new account |
-| `/meta-ads accounts use {name}` | Set active account |
-| `/meta-ads accounts remove {name}` | Remove account |
-| `/meta-ads accounts export` | Export settings for backup |
-| `/meta-ads accounts import` | Import settings from backup |
+| Comando | Descrição |
+|---------|-----------|
+| `/meta-ads setup` | Inicializar skill, salvar credenciais da conta |
+| `/meta-ads accounts list` | Listar todas as contas salvas |
+| `/meta-ads accounts add {nome}` | Adicionar nova conta |
+| `/meta-ads accounts use {nome}` | Definir conta ativa |
+| `/meta-ads accounts remove {nome}` | Remover conta |
+| `/meta-ads accounts export` | Exportar configurações para backup |
+| `/meta-ads accounts import` | Importar configurações de backup |
 
-### Campaign Management
+### Gerenciamento de Campanhas
 
-| Command | Description |
-|---------|-------------|
-| `/meta-ads campaign create` | Create new campaign with folder read |
-| `/meta-ads analyze {period}` | Analyze performance |
-| `/meta-ads diagnose` | Run diagnostics on active campaigns |
-| `/meta-ads scale {id}` | Scale campaign safely |
-| `/meta-ads pause {id}` | Pause campaign |
-| `/meta-ads resume {id}` | Resume campaign |
-| `/meta-ads status` | Show current status |
+| Comando | Descrição |
+|---------|-----------|
+| `/meta-ads campaign create` | Criar nova campanha lendo pasta |
+| `/meta-ads analyze {período}` | Analisar desempenho |
+| `/meta-ads diagnose` | Executar diagnósticos nas campanhas ativas |
+| `/meta-ads scale {id}` | Escalar campanha com segurança |
+| `/meta-ads pause {id}` | Pausar campanha |
+| `/meta-ads resume {id}` | Retomar campanha |
+| `/meta-ads status` | Mostrar status atual |
 
-### Folder Commands
+### Comandos de Pastas
 
-| Command | Description |
-|---------|-------------|
-| `/meta-ads clients` | List all clients |
-| `/meta-ads campaigns {client}` | List campaigns for client |
-| `/meta-ads folder create {client} {name}` | Create campaign folder |
-| `/meta-ads briefing {client} {campaign}` | Read briefing |
+| Comando | Descrição |
+|---------|-----------|
+| `/meta-ads clients` | Listar todos os clientes |
+| `/meta-ads campaigns {cliente}` | Listar campanhas do cliente |
+| `/meta-ads folder create {cliente} {nome}` | Criar pasta de campanha |
+| `/meta-ads briefing {cliente} {campanha}` | Ler briefing |
 
-### Analysis Periods
+### Períodos de Análise
 
-| Period | Description |
-|--------|-------------|
-| `today` | Today's data |
-| `yesterday` | Yesterday's data |
-| `last7d` | Last 7 days |
-| `last14d` | Last 14 days |
-| `last30d` | Last 30 days |
-| `last90d` | Last 90 days |
-| `this_month` | Current month |
-| `last_month` | Previous month |
+| Período | Descrição |
+|---------|-----------|
+| `today` | Dados de hoje |
+| `yesterday` | Dados de ontem |
+| `last7d` | Últimos 7 dias |
+| `last14d` | Últimos 14 dias |
+| `last30d` | Últimos 30 dias |
+| `last90d` | Últimos 90 dias |
+| `this_month` | Mês atual |
+| `last_month` | Mês anterior |
 
 ---
 
-## Example Workflow
+## Exemplo de Fluxo de Trabalho
 
-### Step 1: Setup (First Time)
+### Passo 1: Configuração (Primeira Vez)
 
 ```bash
-# Initialize storage
+# Inicializar armazenamento
 mkdir -p ~/.meta-ads-manager/cache/insights
 mkdir -p ~/.meta-ads-manager/cache/campaigns
 echo '{"version":"1.0","accounts":{}}' > ~/.meta-ads-manager/accounts.json
 ```
 
-### Step 2: Create Campaign Folder
+### Passo 2: Criar Pasta de Campanha
 
 ```bash
 mkdir -p /campanhas/nike/2024-03/black_friday/
 ```
 
-### Step 3: Add Briefing
+### Passo 3: Adicionar Briefing
 
 ```bash
-# Create and edit briefing.md
+# Criar e editar briefing.md
 nano /campanhas/nike/2024-03/black_friday/briefing.md
 
-# Paste briefing template and fill in details
+# Colar modelo de briefing e preencher detalhes
 ```
 
-### Step 4: Add Creatives
+### Passo 4: Adicionar Criativos
 
 ```bash
-# Copy your creatives
+# Copiar seus criativos
 cp ~/Downloads/nike_ad1.jpg /campanhas/nike/2024-03/black_friday/ad_01_feed_image.jpg
 cp ~/Downloads/nike_video.mp4 /campanhas/nike/2024-03/black_friday/ad_01_feed_video.mp4
 cp ~/Downloads/nike_story.mp4 /campanhas/nike/2024-03/black_friday/ad_02_story_video.mp4
 ```
 
-### Step 5: Run Skill
+### Passo 5: Executar Skill
 
 ```
-User: "crie uma campanha para o Nike Black Friday"
+Usuário: "crie uma campanha para o Nike Black Friday"
 
-Skill will:
-1. Check saved accounts
-2. Find /campanhas/nike/2024-03/black_friday/
-3. Read briefing.md
-4. List creatives (ad_01_*, ad_02_*)
-5. Analyze creatives + briefing
-6. Generate ad copy
-7. Ask for approval
-8. Create campaign in Meta
+A Skill irá:
+1. Verificar contas salvas
+2. Encontrar /campanhas/nike/2024-03/black_friday/
+3. Ler briefing.md
+4. Listar criativos (ad_01_*, ad_02_*)
+5. Analisar criativos + briefing
+6. Gerar copy do anúncio
+7. Solicitar aprovação
+8. Criar campanha no Meta
 ```
 
 ---
 
-## Storage Files
+## Arquivos de Armazenamento
 
 ### accounts.json
 
@@ -310,47 +310,47 @@ Skill will:
 
 ---
 
-## Troubleshooting
+## Solução de Problemas
 
-### Account Not Found
+### Conta Não Encontrada
 
 ```bash
-# Check if accounts file exists
+# Verificar se o arquivo de contas existe
 ls -la ~/.meta-ads-manager/accounts.json
 
-# If missing, initialize
+# Se estiver faltando, inicializar
 echo '{"version":"1.0","accounts":{},"active_account":null}' > ~/.meta-ads-manager/accounts.json
 ```
 
-### Campaign Folder Not Found
+### Pasta de Campanha Não Encontrada
 
 ```bash
-# List available clients
+# Listar clientes disponíveis
 ls -la /campanhas/
 
-# List campaigns for client
+# Listar campanhas do cliente
 ls -la /campanhas/nike/
 
-# Create missing folder
+# Criar pasta faltando
 mkdir -p /campanhas/nike/2024-03/black_friday/
 ```
 
-### Briefing Not Found
+### Briefing Não Encontrado
 
 ```bash
-# Create briefing.md
+# Criar briefing.md
 touch /campanhas/nike/2024-03/black_friday/briefing.md
 
-# Edit with template
+# Editar com modelo
 nano /campanhas/nike/2024-03/black_friday/briefing.md
 ```
 
-### No Creatives Found
+### Nenhum Criativo Encontrado
 
 ```bash
-# List creatives
+# Listar criativos
 ls -la /campanhas/nike/2024-03/black_friday/ad_*
 
-# Add creatives with correct naming
+# Adicionar criativos com nomenclatura correta
 cp ~/Downloads/creative.jpg /campanhas/nike/2024-03/black_friday/ad_01_feed_image.jpg
 ```

@@ -29,6 +29,74 @@ Construído por quem vive o jogo real. Cada skill, cada automação, cada workfl
 
 ---
 
+## 📦 Instalação
+
+### Via npm (Recomendado)
+
+```bash
+# Instalar globalmente
+npm install -g @goldneuronio/neuro-skills
+
+# Ou usar com npx (sem instalar)
+npx @goldneuronio/neuro-skills start
+```
+
+### Por Plataforma
+
+#### Claude Code
+```bash
+curl -fsSL https://goldneuron.io/install-claude-code.sh | bash
+```
+
+#### OpenCode
+```bash
+curl -fsSL https://goldneuron.io/install-opencode.sh | bash
+```
+
+#### Cursor
+```bash
+curl -fsSL https://goldneuron.io/install-cursor.sh | bash
+```
+
+#### Gemini CLI
+```bash
+curl -fsSL https://goldneuron.io/install-gemini.sh | bash
+```
+
+#### OpenAI Codex
+```bash
+curl -fsSL https://goldneuron.io/install-codex.sh | bash
+```
+
+#### Antigravity
+```bash
+curl -fsSL https://goldneuron.io/install-antigravity.sh | bash
+```
+
+### Instalação Manual
+
+Veja [INSTALL.md](INSTALL.md) para instruções detalhadas de instalação manual para cada plataforma.
+
+---
+
+## 🚀 Uso Rápido
+
+```bash
+# Ver comandos disponíveis
+neuro-skills --help
+
+# Listar skills instalados
+neuro-skills list
+
+# Configurar conta Meta Ads
+neuro-skills setup
+
+# Criar novo projeto
+neuro-skills init meu-projeto
+```
+
+---
+
 ## 🏗️ O Que Você Vai Encontrar
 
 ### Para Donos de Operação

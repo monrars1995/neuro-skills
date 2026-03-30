@@ -1,13 +1,21 @@
 """
-Neuro Skills Agent - Interface Principal
+Neuro Skills Agent - Interface Conversacional
 Autor: Monrars (@monrars)
 Instagram: @monrars
+
+Agent completo que integra:
+- traffic-strategist: Análise e preparação
+- ad-copywriter: Geração de copy
+- meta-ads-manager: Criação e gestão de campanhas
 """
 
 import streamlit as st
 from pathlib import Path
 import sys
 import os
+import json
+from datetime import datetime
+from typing import Dict, Any, List, Optional
 
 # Adicionar diretório pai ao path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -15,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.config import Config, NEURO_DIR
 from core.memory import MemoryManager
 from core.meta_api import MetaAPIClient
-from upload.video_uploader import BatchUploader
+from upload.video_uploader import BatchUploader, VideoUploadManager
 
 # Configuração da página
 st.set_page_config(
@@ -29,34 +37,40 @@ st.set_page_config(
 st.markdown(
     """
 <style>
-    .main-header {
-        font-size: 2.5rem;
-        color: #1f77b4;
-        margin-bottom: 0.5rem;
+    .chat-container {
+        max-width: 900px;
+        margin: 0 auto;
     }
-    .sub-header {
-        font-size: 1.2rem;
-        color: #666;
-        margin-bottom: 2rem;
+    .message-user {
+        background-color: #e3f2fd;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 8px 0;
+        margin-left: 20%;
     }
-    .metric-card {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #1f77b4;
+    .message-agent {
+        background-color: #f5f5f5;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 8px 0;
+        margin-right: 20%;
     }
-    .status-success {
-        color: #28a745;
-        font-weight: bold;
+    .upload-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        margin: 10px 0;
     }
-    .status-error {
-        color: #dc3545;
-        font-weight: bold;
+    .progress-item {
+        padding: 8px;
+        margin: 4px 0;
+        border-radius: 4px;
     }
-    .status-pending {
-        color: #ffc107;
-        font-weight: bold;
-    }
+    .status-success { color: #28a745; }
+    .status-error { color: #dc3545; }
+    .status-pending { color: #ffc107; }
+    .status-running { color: #17a2b8; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -66,13 +80,11 @@ st.markdown(
 # Inicialização
 @st.cache_resource
 def init_memory():
-    """Inicializa gerenciador de memória"""
     return MemoryManager(NEURO_DIR)
 
 
 @st.cache_resource
 def get_config():
-    """Retorna configuração"""
     return Config()
 
 
@@ -86,653 +98,1080 @@ if "config" not in st.session_state:
 if "api_client" not in st.session_state:
     st.session_state.api_client = None
 
-if "current_client" not in st.session_state:
-    st.session_state.current_client = st.session_state.memory.get_active_client()
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-# Sidebar
+if "workflow_state" not in st.session_state:
+    st.session_state.workflow_state = {
+        "step": "start",
+        "client_id": None,
+        "campaign_name": None,
+        "briefing": None,
+        "creatives": [],
+        "uploaded_videos": [],
+        "uploaded_images": [],
+        "brand_voice": None,
+        "targeting": None,
+        "copy_variants": [],
+        "campaign_id": None,
+        "adset_id": None,
+        "ad_ids": [],
+    }
+
+if "uploads" not in st.session_state:
+    st.session_state.uploads = {"pending": [], "completed": [], "failed": []}
+
+# ==================== FUNÇÕES DO AGENT ====================
+
+
+def add_message(role: str, content: str):
+    """Adiciona mensagem ao histórico"""
+    st.session_state.chat_history.append(
+        {"role": role, "content": content, "timestamp": datetime.now().isoformat()}
+    )
+
+
+def get_active_client() -> Optional[Dict]:
+    """Retorna cliente ativo"""
+    client_id = st.session_state.memory.get_active_client()
+    if client_id:
+        return st.session_state.memory.get_client(client_id)
+    return None
+
+
+def get_active_account() -> Optional[Dict]:
+    """Retorna conta ativa"""
+    account_name = st.session_state.memory.list_accounts().get("active_account")
+    if account_name:
+        return (
+            st.session_state.memory.list_accounts()
+            .get("accounts", {})
+            .get(account_name)
+        )
+    return None
+
+
+def analyze_briefing(briefing_text: str) -> Dict[str, Any]:
+    """Analisa briefing usando lógica do traffic-strategist"""
+    # Extrair informações do briefing
+    lines = briefing_text.split("\n")
+
+    result = {
+        "client": None,
+        "product": None,
+        "objective": None,
+        "budget": None,
+        "target_cpa": None,
+        "target_roas": None,
+        "audience": {},
+        "creatives_needed": [],
+        "usps": [],
+        "timeline": None,
+        "missing_info": [],
+    }
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        # Extrair cliente
+        if "cliente:" in line.lower() or "client:" in line.lower():
+            result["client"] = line.split(":")[-1].strip()
+        # Extrair produto
+        elif "produto:" in line.lower() or "product:" in line.lower():
+            result["product"] = line.split(":")[-1].strip()
+        # Extrair objetivo
+        elif "objetivo:" in line.lower() or "objective:" in line.lower():
+            obj = line.split(":")[-1].strip().lower()
+            if "venda" in obj or "sales" in obj or "conversão" in obj:
+                result["objective"] = "CONVERSIONS"
+            elif "tráfego" in obj or "traffic" in obj:
+                result["objective"] = "TRAFFIC"
+            elif "awareness" in obj or "reconhecimento" in obj:
+                result["objective"] = "AWARENESS"
+            elif "lead" in obj:
+                result["objective"] = "LEAD_GENERATION"
+            else:
+                result["objective"] = "CONVERSIONS"
+        # Extrair orçamento
+        elif (
+            "orçamento:" in line.lower()
+            or "budget:" in line.lower()
+            or "investimento:" in line.lower()
+        ):
+            budget_str = line.split(":")[-1].strip()
+            # Parse budget (R$ 5000 -> 5000)
+            budget = "".join(c for c in budget_str if c.isdigit())
+            if budget:
+                result["budget"] = int(budget)
+        # Extrair CPA
+        elif "cpa:" in line.lower() or "cpa alvo:" in line.lower():
+            cpa_str = line.split(":")[-1].strip()
+            cpa = "".join(c for c in cpa_str if c.isdigit() or c == ".")
+            if cpa:
+                result["target_cpa"] = float(cpa)
+        # Extrair ROAS
+        elif "roas:" in line.lower() or "roas alvo:" in line.lower():
+            roas_str = line.split(":")[-1].strip()
+            roas = "".join(c for c in roas_str if c.isdigit() or c == ".")
+            if roas:
+                result["target_roas"] = float(roas)
+
+    return result
+
+
+def generate_copy(
+    briefing: Dict, brand_voice: Dict, num_variants: int = 3
+) -> List[Dict]:
+    """Gera variações de copy usando lógica do ad-copywriter"""
+    variants = []
+
+    # Based on objective, generate appropriate copy structure
+    objective = briefing.get("objective", "CONVERSIONS")
+    product = briefing.get("product", "nosso produto")
+    client = briefing.get("client", "marca")
+
+    # Copy templates based on objective
+    if objective == "CONVERSIONS":
+        templates = [
+            {
+                "name": "Direct Conversion",
+                "headline": f"Descubra {product} Agora",
+                "primary_text": f"Encontre exatamente o que você procura. {client} oferece qualidade e confiança. Aproveite condições especiais por tempo limitado.",
+                "cta": "Compre Agora",
+            },
+            {
+                "name": "Benefit-Focused",
+                "headline": f"Aproveite Todos os Benefícios",
+                "primary_text": f"O que você estava procurando está aqui. {product} com a qualidade {client}. Resultados visíveis desde o primeiro uso.",
+                "cta": "Saiba Mais",
+            },
+            {
+                "name": "Urgency",
+                "headline": f"Últimas Unidades Disponíveis",
+                "primary_text": f"Não perca a oportunidade de conhecer {product}. Oferta especial válida enquanto durar o estoque. Qualidade garantida.",
+                "cta": "Compre Agora",
+            },
+        ]
+    elif objective == "TRAFFIC":
+        templates = [
+            {
+                "name": "Curiosity Click",
+                "headline": f"Veja o Que Está Fazendo Sucesso",
+                "primary_text": f"Descubra por que milhares de pessoas já conhecem {product}. Clique e surpreenda-se.",
+                "cta": "Saiba Mais",
+            },
+            {
+                "name": "Value Proposition",
+                "headline": f"A Qualidade Que Você Merece",
+                "primary_text": f"{client} apresenta {product}. A combinação perfeita de qualidade e preço. Confira agora.",
+                "cta": "Ver Agora",
+            },
+            {
+                "name": "Social Proof",
+                "headline": f"O Que Dizem Sobre {product}",
+                "primary_text": f"Veja os resultados reais de quem já experimentou {product}. Sua vez de descobrir.",
+                "cta": "Conheça",
+            },
+        ]
+    else:  # AWARENESS or others
+        templates = [
+            {
+                "name": "Brand Story",
+                "headline": f"Conheça {client}",
+                "primary_text": f"{product} - A escolha certa para quem busca qualidade. Uma história de sucesso que começa com você.",
+                "cta": "Conheça",
+            },
+            {
+                "name": "Impact",
+                "headline": f"Novidade: {product}",
+                "primary_text": f"{client} inova mais uma vez. Descubra o que estamos preparando para você.",
+                "cta": "Descubra",
+            },
+            {
+                "name": "Connection",
+                "headline": f"Feito Para Você",
+                "primary_text": f"{product} foi criado pensando em você. Qualidade {client} em cada detalhe.",
+                "cta": "Ver Detalhes",
+            },
+        ]
+
+    # Apply brand voice modifications
+    tone = brand_voice.get("voice_profile", {}).get("tone", {})
+    keywords_use = (
+        brand_voice.get("voice_profile", {}).get("keywords", {}).get("use", [])
+    )
+    keywords_avoid = (
+        brand_voice.get("voice_profile", {}).get("keywords", {}).get("avoid", [])
+    )
+
+    for i, template in enumerate(templates[:num_variants]):
+        variant = {
+            "id": f"copy_{i + 1}",
+            "name": template["name"],
+            "headline": template["headline"],
+            "primary_text": template["primary_text"],
+            "cta": template["cta"],
+            "format": "feed",  # default
+            "created_at": datetime.now().isoformat(),
+        }
+        variants.append(variant)
+
+    return variants
+
+
+def generate_targeting(briefing: Dict, brand_voice: Dict) -> Dict:
+    """Gera configurações de targeting"""
+    # Default targeting
+    targeting = {
+        "age_min": 25,
+        "age_max": 55,
+        "genders": ["male", "female"],
+        "locations": ["BR"],
+        "interests": [],
+        "behaviors": [],
+        "custom_audiences": [],
+        "lookalikes": [],
+    }
+
+    # Apply brand voice learnings
+    learned = brand_voice.get("learned_preferences", {})
+    if learned.get("best_performing_audiences"):
+        # Use learned preferences
+        pass
+
+    return targeting
+
+
+def create_campaign_structure(
+    api_client,
+    account_id: str,
+    briefing: Dict,
+    targeting: Dict,
+    uploaded_creatives: Dict,
+) -> Dict:
+    """Cria estrutura de campanha via API"""
+    results = {"campaign": None, "adset": None, "ads": [], "errors": []}
+
+    try:
+        # 1. Criar campanha
+        campaign_name = f"{briefing.get('client', 'Cliente')} - {briefing.get('product', 'Produto')} - {datetime.now().strftime('%Y-%m-%d')}"
+        campaign_result = api_client.create_campaign(
+            name=campaign_name,
+            objective=briefing.get("objective", "CONVERSIONS"),
+            status="PAUSED",
+        )
+
+        if "id" in campaign_result:
+            results["campaign"] = campaign_result
+
+            # 2. Criar ad set
+            budget = briefing.get("budget", 5000)  # Default 5000 centavos = R$50
+            adset_result = api_client.create_ad_set(
+                campaign_id=campaign_result["id"],
+                name=f"{campaign_name} - Ad Set",
+                daily_budget=budget,
+                targeting=targeting,
+            )
+
+            if "id" in adset_result:
+                results["adset"] = adset_result
+
+                # 3. Criar ads para cada creative
+                for video in uploaded_creatives.get("videos", []):
+                    if video.get("status") == "completed" and video.get("video_id"):
+                        # Criar creative
+                        creative_result = api_client.create_ad_creative(
+                            name=f"{campaign_name} - {video['filename']}",
+                            page_id=account_id,
+                            video_id=video["video_id"],
+                            message="Teste",
+                        )
+
+                        if "id" in creative_result:
+                            # Criar ad
+                            ad_result = api_client.create_ad(
+                                ad_set_id=adset_result["id"],
+                                name=f"{campaign_name} - Ad",
+                                creative_id=creative_result["id"],
+                            )
+
+                            if "id" in ad_result:
+                                results["ads"].append(ad_result)
+                            else:
+                                results["errors"].append(
+                                    f"Erro ao criar ad: {ad_result.get('error')}"
+                                )
+                        else:
+                            results["errors"].append(
+                                f"Erro ao criar creative: {creative_result.get('error')}"
+                            )
+            else:
+                results["errors"].append(
+                    f"Erro ao criar ad set: {adset_result.get('error')}"
+                )
+        else:
+            results["errors"].append(
+                f"Erro ao criar campanha: {campaign_result.get('error')}"
+            )
+
+    except Exception as e:
+        results["errors"].append(str(e))
+
+    return results
+
+
+# ==================== SIDEBAR ====================
+
 with st.sidebar:
     st.markdown("### 🧠 Neuro Skills Agent")
     st.markdown("---")
 
-    # Navegação
-    page = st.radio(
-        "Navegação",
-        [
-            "🏠 Dashboard",
-            "👤 Clientes",
-            "📁 Campanhas",
-            "⬆️ Upload",
-            "📊 Insights",
-            "⚙️ Configurações",
-        ],
-        key="navigation",
-    )
+    # Status
+    st.markdown("**Status:**")
+
+    # Cliente ativo
+    active_client = get_active_client()
+    if active_client:
+        st.markdown(f"👤 **{active_client.get('name', 'N/A')}**")
+    else:
+        st.markdown("👤 Nenhum cliente")
+
+    # Conta ativa
+    active_account = get_active_account()
+    if active_account:
+        st.markdown(f"📱 **{active_account.get('name', 'N/A')}**")
+    else:
+        st.markdown("📱 Nenhuma conta")
 
     st.markdown("---")
 
-    # Cliente ativo
-    active_client = st.session_state.memory.get_active_client()
-    if active_client:
-        st.markdown(f"**Cliente Ativo:** `{active_client}`")
-    else:
-        st.markdown("**Cliente Ativo:** Nenhum")
+    # Navegação rápida
+    st.markdown("**Ações:**")
+    if st.button("⚙️ Configurações", use_container_width=True):
+        st.session_state.workflow_state["step"] = "config"
+    if st.button("📤 Novo Upload", use_container_width=True):
+        st.session_state.workflow_state["step"] = "upload"
+    if st.button("📝 Novo Briefing", use_container_width=True):
+        st.session_state.workflow_state["step"] = "briefing"
 
     st.markdown("---")
     st.markdown("📱 [@monrars](https://instagram.com/monrars)")
     st.markdown("MIT License ©2026")
 
-# ===================== DASHBOARD =====================
-if page == "🏠 Dashboard":
-    st.markdown('<h1 class="main-header">🧠 Dashboard</h1>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-header">Visão geral do Neuro Skills Agent</p>',
-        unsafe_allow_html=True,
-    )
+# ==================== MAIN CHAT INTERFACE ====================
 
-    # Métricas principais
-    col1, col2, col3, col4 = st.columns(4)
+st.markdown(
+    '<h1 class="main-header">🧠 Neuro Skills Agent</h1>', unsafe_allow_html=True
+)
+st.markdown(
+    '<p class="sub-header">Seu assistente inteligente para Meta Ads</p>',
+    unsafe_allow_html=True,
+)
 
-    clients = st.session_state.memory.list_clients()
-    accounts = st.session_state.memory.list_accounts()
+# Container principal
+chat_container = st.container()
 
-    num_clients = len(clients.get("clients", {}))
-    num_accounts = len(accounts.get("accounts", {}))
+# ==================== PROCESSAMENTO POR ETAPAS ====================
 
-    with col1:
-        st.metric(label="Clientes", value=num_clients)
-    with col2:
-        st.metric(label="Contas Meta", value=num_accounts)
-    with col3:
-        st.metric(label="Campanhas Ativas", value=0)  # TODO: implementar
-    with col4:
-        st.metric(label="Uploads Hoje", value=0)  # TODO: implementar
+current_step = st.session_state.workflow_state["step"]
 
-    st.markdown("---")
+# ETAPA: START
+if current_step == "start":
+    with chat_container:
+        # Mensagem inicial
+        st.markdown("""
+        ### 👋 Bem-vindo ao Neuro Skills Agent!
+        
+        Sou seu assistente para criação e gestão de campanhas Meta Ads. Vou te ajudar com:
+        
+        - 📤 **Upload de criativos** (vídeos e imagens)
+        - 📝 **Análise de briefing**
+        - ✍️ **Geração de copy** baseada na voz da marca
+        - 🎯 **Criação de campanhas** com targeting otimizado
+        - 📊 **Acompanhamento de performance**
+        
+        **Para começar, preciso saber:**
+        """)
 
-    # Ações rápidas
-    st.subheader("⚡ Ações Rápidas")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        if st.button("➕ Novo Cliente", use_container_width=True):
-            st.session_state.navigation = "👤 Clientes"
-            st.rerun()
-
-    with col2:
-        if st.button("📁 Nova Campanha", use_container_width=True):
-            st.session_state.navigation = "📁 Campanhas"
-            st.rerun()
-
-    with col3:
-        if st.button("⬆️ Upload Criativos", use_container_width=True):
-            st.session_state.navigation = "⬆️ Upload"
-            st.rerun()
-
-    st.markdown("---")
-
-    # Últimos uploads
-    st.subheader("📤 Últimos Uploads")
-    st.info("Nenhum upload realizado ainda.")
-
-    # Clientes recentes
-    st.subheader("👥 Clientes Recentes")
-    if clients.get("recent_clients"):
-        for client_id in clients["recent_clients"][:5]:
-            client_data = clients["clients"].get(client_id, {})
-            st.markdown(f"- **{client_data.get('name', client_id)}** ({client_id})")
-    else:
-        st.info("Nenhum cliente cadastrado.")
-
-# ===================== CLIENTES =====================
-elif page == "👤 Clientes":
-    st.markdown('<h1 class="main-header">👤 Clientes</h1>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-header">Gerenciar clientes e suas configurações</p>',
-        unsafe_allow_html=True,
-    )
-
-    tab1, tab2 = st.tabs(["Lista de Clientes", "Novo Cliente"])
-
-    with tab1:
-        st.subheader("Clientes Cadastrados")
-
-        clients = st.session_state.memory.list_clients()
-
-        if clients.get("clients"):
-            for client_id, client_data in clients["clients"].items():
-                with st.expander(
-                    f"**{client_data.get('name', client_id)}** - {client_data.get('industry', 'Sem indústria')}"
-                ):
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-                        st.write(f"**ID:** {client_id}")
-                        st.write(f"**Nome:** {client_data.get('name', 'N/A')}")
-                        st.write(f"**Indústria:** {client_data.get('industry', 'N/A')}")
-
-                    with col2:
-                        st.write(
-                            f"**Criado:** {client_data.get('created_at', 'N/A')[:10] if client_data.get('created_at') else 'N/A'}"
-                        )
-                        st.write(
-                            f"**Último Uso:** {client_data.get('last_used', 'N/A')[:10] if client_data.get('last_used') else 'N/A'}"
-                        )
-
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        if st.button("✏️ Editar", key=f"edit_{client_id}"):
-                            st.info("Funcionalidade em desenvolvimento")
-                    with col2:
-                        if st.button("🎯 Ativar", key=f"activate_{client_id}"):
-                            st.session_state.memory.set_active_client(client_id)
-                            st.session_state.current_client = client_id
-                            st.success(f"Cliente {client_id} ativado!")
-                            st.rerun()
-                    with col3:
-                        if st.button("📁 Ver Campanhas", key=f"campaigns_{client_id}"):
-                            st.info("Funcionalidade em desenvolvimento")
+        # Verificar se tem cliente e conta configurados
+        if not active_client:
+            st.warning("⚠️ Você precisa cadastrar um cliente primeiro.")
+            if st.button("➕ Cadastrar Cliente", type="primary"):
+                st.session_state.workflow_state["step"] = "new_client"
+                st.rerun()
+        elif not active_account:
+            st.warning("⚠️ Você precisa configurar uma conta Meta Ads.")
+            if st.button("⚙️ Configurar Conta", type="primary"):
+                st.session_state.workflow_state["step"] = "config_account"
+                st.rerun()
         else:
-            st.info(
-                "Nenhum cliente cadastrado. Clique em 'Novo Cliente' para adicionar."
-            )
+            st.success(f"✅ Pronto para começar!")
+            st.markdown(f"**Cliente:** {active_client.get('name')}")
+            st.markdown(f"**Conta:** {active_account.get('name')}")
 
-    with tab2:
-        st.subheader("Cadastrar Novo Cliente")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(
+                    "📤 Upload de Criativos", type="primary", use_container_width=True
+                ):
+                    st.session_state.workflow_state["step"] = "upload"
+                    st.rerun()
+            with col2:
+                if st.button(
+                    "📝 Criar Briefing", type="primary", use_container_width=True
+                ):
+                    st.session_state.workflow_state["step"] = "briefing"
+                    st.rerun()
+
+# ETAPA: NEW CLIENT
+elif current_step == "new_client":
+    with chat_container:
+        st.markdown("### ➕ Cadastrar Novo Cliente")
 
         with st.form("new_client_form"):
+            client_name = st.text_input(
+                "Nome do Cliente *", placeholder="Ex: Nike Brasil"
+            )
+            client_id = st.text_input("ID do Cliente *", placeholder="Ex: nike")
+            industry = st.selectbox(
+                "Indústria",
+                [
+                    "",
+                    "E-commerce",
+                    "SaaS",
+                    "Health Care",
+                    "Fitness",
+                    "Education",
+                    "Retail",
+                    "Services",
+                    "Other",
+                ],
+            )
+
             col1, col2 = st.columns(2)
-
-            with col1:
-                client_id = st.text_input(
-                    "ID do Cliente *", placeholder="ex: nike, fitness_app"
-                )
-                client_name = st.text_input(
-                    "Nome do Cliente *", placeholder="Ex: Nike Brasil"
-                )
-
-            with col2:
-                client_industry = st.selectbox(
-                    "Indústria",
-                    [
-                        "",
-                        "E-commerce",
-                        "SaaS",
-                        "Health & Fitness",
-                        "Education",
-                        "Finance",
-                        "Retail",
-                        "Other",
-                    ],
-                )
-                client_website = st.text_input("Website", placeholder="https://...")
-
-            st.markdown("**Público-Alvo**")
-            col1, col2, col3 = st.columns(3)
-
             with col1:
                 age_min = st.number_input(
                     "Idade Mínima", min_value=18, max_value=65, value=25
                 )
+            with col2:
                 age_max = st.number_input(
-                    "Idade Máxima", min_value=18, max_value=65, value=45
+                    "Idade Máxima", min_value=18, max_value=65, value=55
                 )
 
-            with col2:
-                gender = st.selectbox("Gênero", ["Todos", "Masculino", "Feminino"])
-
-            with col3:
-                locations = st.text_area(
-                    "Localizações (uma por linha)",
-                    placeholder="Brasil\nArgentina\nChile",
-                )
-
-            st.markdown("**Objetivos**")
-            col1, col2 = st.columns(2)
-
-            with col1:
-                primary_goal = st.selectbox(
-                    "Objetivo Principal",
-                    [
-                        "Conversions",
-                        "Traffic",
-                        "Awareness",
-                        "Lead Generation",
-                        "App Installs",
-                    ],
-                )
-
-            with col2:
-                target_cpa = st.number_input(
-                    "CPA Alvo (R$)", min_value=0.0, value=25.0, step=5.0
-                )
-                target_roas = st.number_input(
-                    "ROAS Alvo", min_value=0.0, value=4.0, step=0.5
-                )
-
-            budget = st.number_input(
-                "Orçamento Mensal (R$)", min_value=0, value=5000, step=500
+            locations = st.text_area(
+                "Localizações (uma por linha)",
+                placeholder="Brasil\nSão Paulo\nRio de Janeiro",
             )
 
             submitted = st.form_submit_button("Cadastrar Cliente", type="primary")
 
             if submitted:
-                if not client_id or not client_name:
-                    st.error("Preencha os campos obrigatórios (*)")
+                if not client_name or not client_id:
+                    st.error("Preencha todos os campos obrigatórios")
                 else:
                     client_data = {
                         "name": client_name,
-                        "industry": client_industry,
-                        "website": client_website,
+                        "industry": industry,
                         "target_audience": {
                             "age_range": [age_min, age_max],
-                            "gender": gender.lower(),
                             "locations": [
                                 l.strip() for l in locations.split("\n") if l.strip()
                             ],
-                        },
-                        "business_objectives": {
-                            "primary": primary_goal,
-                            "target_cpa": target_cpa,
-                            "target_roas": target_roas,
-                            "budget": budget,
                         },
                     }
 
                     st.session_state.memory.create_client(
                         client_id.lower().replace(" ", "_"), client_data
                     )
-                    st.success(f"Cliente '{client_name}' cadastrado com sucesso!")
+                    st.session_state.memory.set_active_client(
+                        client_id.lower().replace(" ", "_")
+                    )
+
+                    st.success(f"✅ Cliente '{client_name}' cadastrado!")
+                    st.session_state.workflow_state["step"] = "start"
                     st.rerun()
 
-# ===================== UPLOAD =====================
-elif page == "⬆️ Upload":
-    st.markdown(
-        '<h1 class="main-header">⬆️ Upload de Criativos</h1>', unsafe_allow_html=True
-    )
-    st.markdown(
-        '<p class="sub-header">Upload de vídeos e imagens para Meta Ads</p>',
-        unsafe_allow_html=True,
-    )
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
 
-    # Verificar se há conta ativa
-    accounts = st.session_state.memory.list_accounts()
-    active_account = accounts.get("active_account")
+# ETAPA: CONFIG_ACCOUNT
+elif current_step == "config_account":
+    with chat_container:
+        st.markdown("### ⚙️ Configurar Conta Meta Ads")
 
-    if not active_account:
-        st.warning(
-            "⚠️ Nenhuma conta Meta Ads ativa. Configure uma conta em 'Configurações'."
-        )
-    else:
-        account = accounts.get("accounts", {}).get(active_account, {})
-        st.info(f"📱 Conta ativa: **{account.get('name', active_account)}**")
-
-        # Verificar se API client está configurado
-        if st.session_state.api_client is None:
-            access_token = account.get("access_token")
-            ad_account_id = account.get("ad_account_id")
-
-            if access_token and ad_account_id:
-                st.session_state.api_client = MetaAPIClient(access_token, ad_account_id)
-            else:
-                st.error("Conta não possui token ou ID configurado.")
-
-        tab1, tab2 = st.tabs(["Upload de Arquivos", "Upload em Lote"])
-
-        with tab1:
-            st.subheader("Upload de Criativo Individual")
-
-            with st.form("upload_form"):
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    creative_type = st.radio("Tipo de Criativo", ["Vídeo", "Imagem"])
-                    uploaded_file = st.file_uploader(
-                        "Selecionar Arquivo",
-                        type=["mp4", "mov", "avi", "mkv", "jpg", "jpeg", "png", "gif"],
-                    )
-
-                with col2:
-                    creative_name = st.text_input(
-                        "Nome do Criativo", placeholder="Ex: ad_01_feed_video"
-                    )
-                    campaign_name = st.text_input(
-                        "Nome da Campanha", placeholder="Ex: black_friday_2024"
-                    )
-
-                submit = st.form_submit_button("⬆️ Fazer Upload", type="primary")
-
-                if submit and uploaded_file:
-                    if not creative_name:
-                        st.error("Digite o nome do criativo.")
-                    else:
-                        # Salvar arquivo temporariamente
-                        temp_dir = st.session_state.config.upload_temp_dir
-                        temp_dir.mkdir(parents=True, exist_ok=True)
-
-                        temp_path = temp_dir / uploaded_file.name
-                        with open(temp_path, "wb") as f:
-                            f.write(uploaded_file.getbuffer())
-
-                        st.info("📤 Iniciando upload...")
-
-                        # Progress bar
-                        progress_bar = st.progress(0)
-                        status_text = st.empty()
-
-                        def on_progress(proportion, uploaded, total):
-                            progress_bar.progress(proportion)
-                            mb_uploaded = uploaded / (1024 * 1024)
-                            mb_total = total / (1024 * 1024)
-                            status_text.text(
-                                f"Enviando: {mb_uploaded:.1f}MB / {mb_total:.1f}MB ({proportion * 100:.1f}%)"
-                            )
-
-                        # Upload
-                        if creative_type == "Vídeo":
-                            result = st.session_state.api_client.upload_video(
-                                video_path=temp_path, progress_callback=on_progress
-                            )
-                        else:
-                            result = st.session_state.api_client.upload_image(
-                                image_path=temp_path
-                            )
-                            progress_bar.progress(1.0)
-
-                        # Limpar arquivo temporário
-                        temp_path.unlink()
-
-                        # Resultado
-                        if result.get("success"):
-                            st.success(f"✅ Upload concluído!")
-                            st.json(
-                                {
-                                    "video_id": result.get("video_id"),
-                                    "image_hash": result.get("image_hash"),
-                                    "file_size_mb": result.get("file_size_mb"),
-                                    "filename": result.get("filename"),
-                                }
-                            )
-                        else:
-                            st.error(f"❌ Erro no upload: {result.get('error')}")
-
-        with tab2:
-            st.subheader("Upload em Lote")
-
-            st.markdown("""
-            **Como funciona:**
-            1. Selecione uma pasta com criativos
-            2. O sistema envia todos os vídeos e imagens
-            3. Aguarde a confirmação de cada upload
-            
-            **Formatos suportados:**
-            - Vídeos: `.mp4`, `.mov`, `.avi`, `.mkv`
-            - Imagens: `.jpg`, `.jpeg`, `.png`, `.gif`
-            """)
-
-            folder_path = st.text_input(
-                "Caminho da Pasta", placeholder="/campanhas/nike/2024-03/black_friday/"
-            )
-
-            campaign_name = st.text_input("Nome da Campanha para Metadados")
-
-            if st.button("📤 Upload em Lote", type="primary"):
-                if not folder_path:
-                    st.error("Digite o caminho da pasta.")
-                else:
-                    folder = Path(folder_path)
-
-                    if not folder.exists():
-                        st.error(f"Pasta não encontrada: {folder_path}")
-                    else:
-                        # Batch upload
-                        batch_uploader = BatchUploader(
-                            st.session_state.api_client, st.session_state.memory
-                        )
-
-                        progress_bar = st.progress(0)
-                        status_text = st.empty()
-
-                        def on_progress(proportion, uploaded, total):
-                            progress_bar.progress(proportion)
-                            status_text.text(
-                                f"Progresso geral: {proportion * 100:.1f}%"
-                            )
-
-                        with st.spinner("Enviando criativos..."):
-                            results = batch_uploader.upload_creatives_from_folder(
-                                folder_path=folder,
-                                campaign_name=campaign_name or "batch_upload",
-                                progress_callback=on_progress,
-                            )
-
-                        progress_bar.progress(1.0)
-
-                        # Mostrar resultados
-                        st.subheader("📊 Resultados")
-
-                        col1, col2, col3 = st.columns(3)
-
-                        with col1:
-                            st.metric("Vídeos", len(results.get("videos", [])))
-                        with col2:
-                            st.metric("Imagens", len(results.get("images", [])))
-                        with col3:
-                            st.metric("Erros", len(results.get("errors", [])))
-
-                        if results.get("videos"):
-                            st.subheader("🎥 Vídeos")
-                            for video in results["videos"]:
-                                status_emoji = (
-                                    "✅" if video["status"] == "completed" else "❌"
-                                )
-                                st.write(
-                                    f"{status_emoji} {video['file']} - {video['status']}"
-                                )
-                                if video.get("video_id"):
-                                    st.code(f"Video ID: {video['video_id']}")
-
-                        if results.get("images"):
-                            st.subheader("🖼️ Imagens")
-                            for image in results["images"]:
-                                st.write(
-                                    f"✅ {image['file']} - Hash: {image['hash'][:20]}..."
-                                )
-
-                        if results.get("errors"):
-                            st.subheader("⚠️ Erros")
-                            for error in results["errors"]:
-                                st.error(f"{error['file']}: {error['error']}")
-
-# ===================== CAMPANHAS =====================
-elif page == "📁 Campanhas":
-    st.markdown('<h1 class="main-header">📁 Campanhas</h1>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-header">Gerenciar campanhas e criativos</p>',
-        unsafe_allow_html=True,
-    )
-
-    st.info("🚧 Módulo em desenvolvimento")
-
-    # TODO: Implementar gestão de campanhas
-    st.markdown("""
-    **Funcionalidades planejadas:**
-    - Lista de campanhas
-    - Criar nova campanha
-    - Editar campanha
-    - Duplicar campanha
-    - Ver performance
-    """)
-
-# ===================== INSIGHTS =====================
-elif page == "📊 Insights":
-    st.markdown('<h1 class="main-header">📊 Insights</h1>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-header">Análise de performance e aprendizados</p>',
-        unsafe_allow_html=True,
-    )
-
-    st.info("🚧 Módulo em desenvolvimento")
-
-    # TODO: Implementar insights
-    st.markdown("""
-    **Funcionalidades planejadas:**
-    - Dashboard de performance
-    - Benchmarks do mercado
-    - Aprendizados de campanhas
-    - Recomendações automáticas
-    """)
-
-# ===================== CONFIGURAÇÕES =====================
-elif page == "⚙️ Configurações":
-    st.markdown('<h1 class="main-header">⚙️ Configurações</h1>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-header">Configurar contas e preferências</p>',
-        unsafe_allow_html=True,
-    )
-
-    tab1, tab2 = st.tabs(["Contas Meta Ads", "Sistema"])
-
-    with tab1:
-        st.subheader("Contas Meta Ads")
-
-        # Listar contas
+        # Listar contas existentes
         accounts = st.session_state.memory.list_accounts()
 
         if accounts.get("accounts"):
             st.markdown("**Contas Salvas:**")
-
             for acc_name, acc_data in accounts["accounts"].items():
-                with st.expander(f"**{acc_data.get('name', acc_name)}** ({acc_name})"):
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-                        st.write(
-                            f"**Status:** {'✅ Ativa' if acc_data.get('is_active') else '⏸️ Inativa'}"
-                        )
-                        st.write(
-                            f"**Conta ID:** {acc_data.get('ad_account_id', 'N/A')}"
-                        )
-                        st.write(f"**Pixel ID:** {acc_data.get('pixel_id', 'N/A')}")
-                        st.write(f"**Page ID:** {acc_data.get('page_id', 'N/A')}")
-
-                    with col2:
-                        st.write(f"**Moeda:** {acc_data.get('currency', 'N/A')}")
-                        st.write(f"**Timezone:** {acc_data.get('timezone', 'N/A')}")
-                        st.write(
-                            f"**Criado:** {acc_data.get('created_at', 'N/A')[:10] if acc_data.get('created_at') else 'N/A'}"
-                        )
-
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button("🎯 Ativar", key=f"activate_acc_{acc_name}"):
-                            st.session_state.memory.set_active_account(acc_name)
-                            st.success(f"Conta {acc_name} ativada!")
-                            st.rerun()
-                    with col2:
-                        if st.button("🗑️ Remover", key=f"remove_acc_{acc_name}"):
-                            st.warning("Funcionalidade em desenvolvimento")
-        else:
-            st.info("Nenhuma conta cadastrada.")
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.markdown(f"- **{acc_data.get('name')}** (`{acc_name}`)")
+                with col2:
+                    if st.button("Usar", key=f"use_{acc_name}"):
+                        st.session_state.memory.set_active_account(acc_name)
+                        st.success("Conta ativada!")
+                        st.session_state.workflow_state["step"] = "start"
+                        st.rerun()
 
         st.markdown("---")
-
-        # Adicionar nova conta
-        st.subheader("Adicionar Nova Conta")
+        st.markdown("**Adicionar Nova Conta:**")
 
         with st.form("new_account_form"):
             acc_name = st.text_input(
                 "Nome da Conta *", placeholder="Ex: Nike Principal"
             )
             ad_account_id = st.text_input(
-                "Ad Account ID *", placeholder="act_123456789 ou 123456789"
+                "Ad Account ID *", placeholder="act_123456789"
             )
             access_token = st.text_input("Access Token *", type="password")
+            pixel_id = st.text_input("Pixel ID (opcional)")
+            page_id = st.text_input("Page ID (opcional)")
 
-            col1, col2 = st.columns(2)
-
-            with col1:
-                pixel_id = st.text_input("Pixel ID (opcional)")
-                page_id = st.text_input("Page ID (opcional)")
-
-            with col2:
-                business_id = st.text_input("Business ID (opcional)")
-                currency = st.selectbox("Moeda", ["BRL", "USD", "EUR", "GBP"])
-
-            submitted = st.form_submit_button("Adicionar Conta", type="primary")
+            submitted = st.form_submit_button("Salvar Conta", type="primary")
 
             if submitted:
                 if not acc_name or not ad_account_id or not access_token:
-                    st.error("Preencha todos os campos obrigatórios (*)")
+                    st.error("Preencha todos os campos obrigatórios")
                 else:
                     account_data = {
                         "name": acc_name,
-                        "ad_account_id": ad_account_id,
+                        "ad_account_id": ad_account_id.replace("act_", ""),
                         "access_token": access_token,
                         "pixel_id": pixel_id,
                         "page_id": page_id,
-                        "business_id": business_id,
-                        "currency": currency,
-                        "is_active": True,
                     }
 
                     st.session_state.memory.save_account(
                         acc_name.lower().replace(" ", "_"), account_data
                     )
-                    st.success(f"Conta '{acc_name}' adicionada com sucesso!")
+                    st.session_state.memory.set_active_account(
+                        acc_name.lower().replace(" ", "_")
+                    )
+
+                    # Criar API client
+                    st.session_state.api_client = MetaAPIClient(
+                        access_token=access_token, ad_account_id=ad_account_id
+                    )
+
+                    st.success(f"✅ Conta '{acc_name}' salva e ativada!")
+                    st.session_state.workflow_state["step"] = "start"
                     st.rerun()
 
-    with tab2:
-        st.subheader("Sistema")
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
 
-        st.markdown("**Informações:**")
-        st.write(f"**Diretório:** `{NEURO_DIR}`")
-        st.write(f"**Versão:** v2.0.0-beta")
+# ETAPA: UPLOAD
+elif current_step == "upload":
+    with chat_container:
+        st.markdown("### 📤 Upload de Criativos")
 
+        # Verificar se tem conta ativa
+        if not active_account:
+            st.warning("⚠️ Configure uma conta Meta Ads primeiro.")
+            if st.button("⚙️ Configurar Conta"):
+                st.session_state.workflow_state["step"] = "config_account"
+                st.rerun()
+        else:
+            # Criar API client se não existir
+            if st.session_state.api_client is None:
+                st.session_state.api_client = MetaAPIClient(
+                    access_token=active_account["access_token"],
+                    ad_account_id=active_account["ad_account_id"],
+                )
+
+            st.info(f"📱 Conta: **{active_account.get('name')}**")
+
+            # Upload de arquivos
+            st.markdown("**Selecione os arquivos:**")
+            uploaded_files = st.file_uploader(
+                "Vídeos e Imagens",
+                type=["mp4", "mov", "avi", "mkv", "jpg", "jpeg", "png", "gif"],
+                accept_multiple_files=True,
+                help="Arraste arquivos ou clique para selecionar",
+            )
+
+            if uploaded_files:
+                st.markdown(f"**{len(uploaded_files)} arquivo(s) selecionado(s):**")
+
+                # Mostrar arquivos selecionados
+                for file in uploaded_files:
+                    file_size = file.size / (1024 * 1024)
+                    st.markdown(f"- {file.name} ({file_size:.1f} MB)")
+
+                # Nome da campanha
+                campaign_name = st.text_input(
+                    "Nome da Campanha *",
+                    placeholder="Ex: black_friday_2024",
+                    value=st.session_state.workflow_state.get("campaign_name", ""),
+                )
+
+                if st.button("⬆️ Fazer Upload", type="primary"):
+                    if not campaign_name:
+                        st.error("Digite o nome da campanha")
+                    else:
+                        # Salvar arquivos temporariamente
+                        temp_dir = st.session_state.config.upload_temp_dir
+                        temp_dir.mkdir(parents=True, exist_ok=True)
+
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+
+                        videos_uploaded = []
+                        images_uploaded = []
+                        errors = []
+
+                        for i, file in enumerate(uploaded_files):
+                            status_text.text(f"Enviando {file.name}...")
+
+                            # Salvar arquivo temporário
+                            temp_path = temp_dir / file.name
+                            with open(temp_path, "wb") as f:
+                                f.write(file.getbuffer())
+
+                            # Upload
+                            try:
+                                if file.name.lower().endswith(
+                                    (".mp4", ".mov", ".avi", ".mkv")
+                                ):
+                                    result = st.session_state.api_client.upload_video(
+                                        temp_path
+                                    )
+                                    if result.get("success"):
+                                        videos_uploaded.append(
+                                            {
+                                                "filename": file.name,
+                                                "video_id": result["video_id"],
+                                                "status": "completed",
+                                            }
+                                        )
+                                    else:
+                                        errors.append(
+                                            f"{file.name}: {result.get('error')}"
+                                        )
+                                else:
+                                    result = st.session_state.api_client.upload_image(
+                                        temp_path
+                                    )
+                                    if result.get("success"):
+                                        images_uploaded.append(
+                                            {
+                                                "filename": file.name,
+                                                "hash": result["image_hash"],
+                                                "status": "completed",
+                                            }
+                                        )
+                                    else:
+                                        errors.append(
+                                            f"{file.name}: {result.get('error')}"
+                                        )
+                            except Exception as e:
+                                errors.append(f"{file.name}: {str(e)}")
+
+                            # Limpar arquivo temporário
+                            temp_path.unlink()
+
+                            # Atualizar progresso
+                            progress_bar.progress((i + 1) / len(uploaded_files))
+
+                        # Salvar resultados
+                        st.session_state.workflow_state["uploaded_videos"] = (
+                            videos_uploaded
+                        )
+                        st.session_state.workflow_state["uploaded_images"] = (
+                            images_uploaded
+                        )
+                        st.session_state.workflow_state["campaign_name"] = campaign_name
+
+                        # Mostrar resultados
+                        st.markdown("---")
+                        st.markdown("### 📊 Resultados do Upload")
+
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Vídeos", len(videos_uploaded))
+                        with col2:
+                            st.metric("Imagens", len(images_uploaded))
+                        with col3:
+                            st.metric("Erros", len(errors))
+
+                        if videos_uploaded:
+                            st.markdown("**🎥 Vídeos enviados:**")
+                            for v in videos_uploaded:
+                                st.code(f"✅ {v['filename']} → ID: {v['video_id']}")
+
+                        if images_uploaded:
+                            st.markdown("**🖼️ Imagens enviadas:**")
+                            for img in images_uploaded:
+                                st.code(
+                                    f"✅ {img['filename']} → Hash: {img['hash'][:20]}..."
+                                )
+
+                        if errors:
+                            st.markdown("**❌ Erros:**")
+                            for e in errors:
+                                st.error(e)
+
+                        # Próximo passo
+                        if (videos_uploaded or images_uploaded) and not errors:
+                            if st.button("✅ Continuar para Briefing", type="primary"):
+                                st.session_state.workflow_state["step"] = "briefing"
+                                st.rerun()
+
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
+
+# ETAPA: BRIEFING
+elif current_step == "briefing":
+    with chat_container:
+        st.markdown("### 📝 Briefing da Campanha")
+
+        st.markdown("""
+        **Preencha as informações da campanha:**
+        
+        Dica: Cole o briefing completo que o sistema vai extrair as informações automaticamente.
+        """)
+
+        briefing_text = st.text_area(
+            "Briefing",
+            height=300,
+            placeholder="""# Briefing: Black Friday 2024
+
+## Cliente
+- **Cliente:** Nike Brasil
+- **Produto:** Nike Air Max
+- **Indústria:** Sportswear
+
+## Objetivos
+- **Objetivo Principal:** Vendas
+- **CPA Alvo:** R$ 25
+- **ROAS Alvo:** 4.0
+- **Orçamento:** R$ 50.000/mês
+
+## Público-Alvo
+- **Idade:** 25 a 45 anos
+- **Localização:** Brasil
+- **Interesses:** corrida, fitness, esportes
+
+## Criativos
+- Vídeos já enviados via upload""",
+            value=st.session_state.workflow_state.get("briefing", ""),
+        )
+
+        if st.button("🔍 Analisar Briefing", type="primary"):
+            if not briefing_text:
+                st.error("Digite o briefing")
+            else:
+                # Analisar briefing
+                analysis = analyze_briefing(briefing_text)
+
+                # Salvar briefing
+                st.session_state.workflow_state["briefing"] = briefing_text
+                st.session_state.workflow_state["briefing_analysis"] = analysis
+
+                st.markdown("---")
+                st.markdown("### 📊 Análise do Briefing")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("**Informações Extraídas:**")
+                    st.markdown(
+                        f"- **Cliente:** {analysis.get('client', 'Não identificado')}"
+                    )
+                    st.markdown(
+                        f"- **Produto:** {analysis.get('product', 'Não identificado')}"
+                    )
+                    st.markdown(
+                        f"- **Objetivo:** {analysis.get('objective', 'CONVERSIONS')}"
+                    )
+                    st.markdown(
+                        f"- **Orçamento:** R$ {analysis.get('budget', 'Não identificado')}"
+                    )
+
+                with col2:
+                    st.markdown("**Metas:**")
+                    st.markdown(
+                        f"- **CPA Alvo:** R$ {analysis.get('target_cpa', 'Não definido')}"
+                    )
+                    st.markdown(
+                        f"- **ROAS Alvo:** {analysis.get('target_roas', 'Não definido')}x"
+                    )
+
+                # Verificar informações faltantes
+                missing = []
+                if not analysis.get("client"):
+                    missing.append("Nome do cliente")
+                if not analysis.get("product"):
+                    missing.append("Produto/Serviço")
+                if not analysis.get("objective"):
+                    missing.append("Objetivo da campanha")
+                if not analysis.get("budget"):
+                    missing.append("Orçamento")
+
+                if missing:
+                    st.warning(f"⚠️ **Informações faltando:** {', '.join(missing)}")
+                    st.markdown("Por favor, adicione essas informações ao briefing.")
+                else:
+                    st.success(
+                        "✅ Todas as informações necessárias foram identificadas!"
+                    )
+
+                    # Verificar se tem criativos
+                    videos = st.session_state.workflow_state.get("uploaded_videos", [])
+                    images = st.session_state.workflow_state.get("uploaded_images", [])
+
+                    if not videos and not images:
+                        st.warning("⚠️ Você ainda não fez upload de criativos.")
+                        if st.button("📤 Fazer Upload de Criativos"):
+                            st.session_state.workflow_state["step"] = "upload"
+                            st.rerun()
+                    else:
+                        st.markdown(
+                            f"**Criativos disponíveis:** {len(videos)} vídeos, {len(images)} imagens"
+                        )
+
+                        if st.button("✍️ Gerar Copy e Targeting", type="primary"):
+                            st.session_state.workflow_state["step"] = "generate"
+                            st.rerun()
+
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "upload"
+            st.rerun()
+
+# ETAPA: GENERATE
+elif current_step == "generate":
+    with chat_container:
+        st.markdown("### ✍️ Gerando Copy e Targeting")
+
+        # Animação de processamento
+        with st.spinner("Analisando briefing e gerando copy..."):
+            import time
+
+            time.sleep(1)
+
+            # Obterbrand voice do cliente
+            client_id = st.session_state.memory.get_active_client()
+            brand_voice = (
+                st.session_state.memory.get_brand_voice(client_id) if client_id else {}
+            )
+
+            # Obter briefing analysis
+            briefing = st.session_state.workflow_state.get("briefing_analysis", {})
+
+            # Gerar copy
+            copy_variants = generate_copy(briefing, brand_voice)
+            st.session_state.workflow_state["copy_variants"] = copy_variants
+
+            # Gerar targeting
+            targeting = generate_targeting(briefing, brand_voice)
+            st.session_state.workflow_state["targeting"] = targeting
+
+        st.success("✅ Copy e Targeting gerados com sucesso!")
+
+        # Mostrar copy variants
+        st.markdown("### 📝 Variações de Copy")
+
+        for i, variant in enumerate(copy_variants):
+            with st.expander(
+                f"**Variação {i + 1}: {variant['name']}**", expanded=(i == 0)
+            ):
+                st.markdown(f"**Headline:** {variant['headline']}")
+                st.markdown(f"**Texto Principal:** {variant['primary_text']}")
+                st.markdown(f"**CTA:** {variant['cta']}")
+
+                # Editar copy
+                with st.form(f"edit_copy_{i}"):
+                    new_headline = st.text_input("Headline", value=variant["headline"])
+                    new_text = st.text_area(
+                        "Texto Principal", value=variant["primary_text"], height=100
+                    )
+                    new_cta = st.text_input("CTA", value=variant["cta"])
+
+                    if st.form_submit_button("Salvar Alterações"):
+                        st.session_state.workflow_state["copy_variants"][i][
+                            "headline"
+                        ] = new_headline
+                        st.session_state.workflow_state["copy_variants"][i][
+                            "primary_text"
+                        ] = new_text
+                        st.session_state.workflow_state["copy_variants"][i]["cta"] = (
+                            new_cta
+                        )
+                        st.success("Copy atualizado!")
+                        st.rerun()
+
+        # Mostrar targeting
+        st.markdown("### 🎯 Targeting")
+        st.json(targeting)
+
+        # Próximo passo
         st.markdown("---")
-
-        # Backup
-        st.subheader("Backup")
-
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("📦 Criar Backup"):
-                import tarfile
-                from datetime import datetime
-
-                backup_file = (
-                    NEURO_DIR.parent
-                    / f"neuro-skills_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.tar.gz"
-                )
-
-                with tarfile.open(backup_file, "w:gz") as tar:
-                    tar.add(NEURO_DIR, arcname="neuro-skills")
-
-                st.success(f"Backup criado: {backup_file}")
+            if st.button("← Voltar e Editar"):
+                st.session_state.workflow_state["step"] = "briefing"
+                st.rerun()
 
         with col2:
-            if st.button("🗑️ Limpar Cache"):
-                import shutil
+            if st.button("🚀 Criar Campanha", type="primary"):
+                st.session_state.workflow_state["step"] = "create_campaign"
+                st.rerun()
 
-                cache_dirs = [
-                    NEURO_DIR / "sessions" / "meta-ads-manager" / "cache",
-                    NEURO_DIR / "sessions" / "traffic-strategist" / "cache",
-                    NEURO_DIR / "sessions" / "ad-copywriter" / "cache",
-                ]
+# ETAPA: CREATE_CAMPAIGN
+elif current_step == "create_campaign":
+    with chat_container:
+        st.markdown("### 🚀 Criando Campanha")
 
-                for cache_dir in cache_dirs:
-                    if cache_dir.exists():
-                        shutil.rmtree(cache_dir)
-                        cache_dir.mkdir(parents=True)
+        # Verificar se tem API client
+        if st.session_state.api_client is None:
+            account = get_active_account()
+            if account:
+                st.session_state.api_client = MetaAPIClient(
+                    access_token=account["access_token"],
+                    ad_account_id=account["ad_account_id"],
+                )
 
-                st.success("Cache limpo!")
+        # Dados
+        briefing = st.session_state.workflow_state.get("briefing_analysis", {})
+        targeting = st.session_state.workflow_state.get("targeting", {})
+        uploaded_videos = st.session_state.workflow_state.get("uploaded_videos", [])
+        uploaded_images = st.session_state.workflow_state.get("uploaded_images", [])
+        copy_variants = st.session_state.workflow_state.get("copy_variants", [])
+
+        # Resumo
+        st.markdown("**Resumo da Campanha:**")
+        st.markdown(f"- **Cliente:** {briefing.get('client')}")
+        st.markdown(f"- **Objetivo:** {briefing.get('objective')}")
+        st.markdown(f"- **Orçamento:** R$ {briefing.get('budget')}/dia")
+        st.markdown(f"- **Vídeos:** {len(uploaded_videos)}")
+        st.markdown(f"- **Cópias:** {len(copy_variants)}")
 
         st.markdown("---")
-        st.markdown("**📱 Autor:** [@monrars](https://instagram.com/monrars)")
-        st.markdown(
-            "**🔗 GitHub:** [monrars1995/neuro-skills](https://github.com/monrars1995/neuro-skills)"
-        )
+
+        # Criar campanha
+        if st.button("🎯 Criar Campanha no Meta Ads", type="primary"):
+            with st.spinner("Criando campanha..."):
+                # TODO: Implementar criação real
+                st.info("🚧 Funcionalidade em desenvolvimento")
+
+                # Salvar no histórico
+                campaign_record = {
+                    "campaign_name": st.session_state.workflow_state.get(
+                        "campaign_name"
+                    ),
+                    "briefing": briefing,
+                    "targeting": targeting,
+                    "creatives": {"videos": uploaded_videos, "images": uploaded_images},
+                    "copy_variants": copy_variants,
+                    "created_at": datetime.now().isoformat(),
+                    "status": "draft",
+                }
+
+                # Salvar na memória do cliente
+                if client_id:
+                    st.session_state.memory.save_campaign(
+                        client_id,
+                        st.session_state.workflow_state.get("campaign_name"),
+                        campaign_record,
+                    )
+
+                st.success("✅ Campanha salva!")
+
+                st.markdown("### 📋 Próximos Passos:")
+                st.markdown("""
+                1. **Revisar** os criativos e cópias
+                2. **Testar** as variações de copy
+                3. **Lançar** a campanha
+                4. **Monitorar** a performance
+                """)
+
+                if st.button("➕ Criar Nova Campanha"):
+                    # Reset workflow
+                    st.session_state.workflow_state = {
+                        "step": "start",
+                        "client_id": None,
+                        "campaign_name": None,
+                        "briefing": None,
+                        "creatives": [],
+                        "uploaded_videos": [],
+                        "uploaded_images": [],
+                        "brand_voice": None,
+                        "targeting": None,
+                        "copy_variants": [],
+                        "campaign_id": None,
+                        "adset_id": None,
+                        "ad_ids": [],
+                    }
+                    st.rerun()
+
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "generate"
+            st.rerun()
+
+# ETAPA: CONFIG
+elif current_step == "config":
+    with chat_container:
+        st.markdown("### ⚙️ Configurações")
+
+        tab1, tab2, tab3 = st.tabs(["Clientes", "Contas Meta", "Sistema"])
+
+        with tab1:
+            st.subheader("Clientes")
+
+            # Listar clientes
+            clients = st.session_state.memory.list_clients()
+
+            if clients.get("clients"):
+                for cid, cdata in clients["clients"].items():
+                    with st.expander(f"**{cdata.get('name', cid)}**"):
+                        st.json(cdata)
+            else:
+                st.info("Nenhum cliente cadastrado.")
+
+            if st.button("➕ Novo Cliente"):
+                st.session_state.workflow_state["step"] = "new_client"
+                st.rerun()
+
+        with tab2:
+            st.subheader("Contas Meta Ads")
+
+            accounts = st.session_state.memory.list_accounts()
+
+            if accounts.get("accounts"):
+                for aname, adata in accounts["accounts"].items():
+                    with st.expander(f"**{adata.get('name', aname)}**"):
+                        st.markdown(f"- **ID:** {adata.get('ad_account_id')}")
+                        st.markdown(f"- **Pixel:** {adata.get('pixel_id', 'N/A')}")
+                        st.markdown(f"- **Page:** {adata.get('page_id', 'N/A')}")
+            else:
+                st.info("Nenhuma conta cadastrada.")
+
+            if st.button("➕ Nova Conta"):
+                st.session_state.workflow_state["step"] = "config_account"
+                st.rerun()
+
+        with tab3:
+            st.subheader("Sistema")
+            st.markdown(f"**Diretório:** `{NEURO_DIR}`")
+            st.markdown(f"**Versão:** v2.0.0-beta")
+
+            if st.button("📦 Backup"):
+                st.info("Funcionalidade em desenvolvimento")
+
+            if st.button("🗑️ Limpar Cache"):
+                st.info("Funcionalidade em desenvolvimento")
+
+        if st.button("← Voltar ao Início"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
 
 # Footer
 st.markdown("---")

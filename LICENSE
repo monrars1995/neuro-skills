@@ -1,6 +1,9 @@
-MIT License
+MIT License with Attribution
 
-Copyright (c) 2026 Monrars
+Copyright (c) 2026 Monrars (Instagram: @monrars)
+
+Neuro Skills - Meta Ads Automation Framework
+https://github.com/monrars1995/neuro-skills
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +12,20 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+2. When using the Software or any derivative works, attribution must be given to
+   the original author (Monrars) with a link to the original repository:
+   https://github.com/monrars1995/neuro-skills
+
+3. The Software may not be rebranded, repackaged, or resold as a standalone
+   product without explicit written permission from the author.
+
+4. Professional use and commercial deployment is permitted, provided that:
+   - Attribution is maintained in all copies or substantial portions
+   - The Software is not misrepresented as being the original product
+   - Proper credit is given to the original author
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,3 +34,33 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Attribution Notice
+
+If you use this Software in your project, please include the following attribution:
+
+```
+Neuro Skills - Meta Ads Automation Framework
+Created by Monrars (@monrars)
+https://github.com/monrars1995/neuro-skills
+Licensed under MIT License with Attribution
+```
+
+## Commercial Use
+
+Commercial use is permitted under this license. For enterprise deployments,
+SaaS integration, or commercial redistribution, please contact the author
+for additional terms and support options.
+
+## Contributions
+
+Contributions are welcome! By contributing to this project, you agree that
+your contributions will be licensed under the same MIT License with Attribution.
+
+---
+
+For questions, issues, or commercial licensing inquiries:
+- GitHub: https://github.com/monrars1995/neuro-skills/issues
+- Instagram: @monrars

@@ -109,6 +109,7 @@ if "chat_history" not in st.session_state:
 if "workflow_state" not in st.session_state:
     st.session_state.workflow_state = {
         "step": "start",
+        "vertical": None,
         "client_id": None,
         "campaign_name": None,
         "briefing": None,
@@ -134,6 +135,46 @@ if "analytics" not in st.session_state:
 
 if "automation_jobs" not in st.session_state:
     st.session_state.automation_jobs = []
+
+# ==================== VERTICAL AGENTS ====================
+
+VERTICAL_AGENTS = {
+    "concessionarias": {
+        "name": "🚗 Concessionárias",
+        "description": "Veículos, conversão offline, ciclo longo",
+        "segmentation_help": "Segmentação por tipo de veículo, teste drive, financiamento",
+        "features": [
+            "Offline conversion (7 dias)",
+            "CRM integration",
+            "ROI com margens",
+        ],
+    },
+    "imobiliarias": {
+        "name": "🏠 Imobiliárias",
+        "description": "Imóveis, tours virtuais, LTV alto",
+        "segmentation_help": "Segmentação por tipo de imóvel, localização, faixa de valor",
+        "features": ["Product Catalog", "DPA", "ROI com comissões"],
+    },
+    "ecommerce": {
+        "name": "🛒 E-commerce",
+        "description": "Lojas virtuais, DPA, ciclo curto",
+        "segmentation_help": "Segmentação por categoria, retargeting de carrinho",
+        "features": ["Product Catalog", "Cart recovery", "ROI com margens"],
+    },
+    "educacao": {
+        "name": "🎓 Educação",
+        "description": "Cursos, faculdades, sazonalidade",
+        "segmentation_help": "Segmentação por tipo de curso, vida estudantil",
+        "features": ["Campanhas sazonais", "LTV por aluno", "CRM integration"],
+    },
+    "saude": {
+        "name": "🏥 Saúde",
+        "description": "Clínicas, consultórios, LGPD compliance",
+        "segmentation_help": "Segmentação por especialidade, privacy-safe",
+        "features": ["LGPD/HIPAA compliance", "Patient LTV", "Privacy targeting"],
+    },
+}
+
 
 # ==================== FUNÇÕES DO AGENT ====================
 
@@ -236,9 +277,9 @@ def analyze_briefing(briefing_text: str) -> Dict[str, Any]:
 
 
 def generate_copy(
-    briefing: Dict, brand_voice: Dict, num_variants: int = 3
+    briefing: Dict, brand_voice: Dict, num_variants: int = 3, vertical: str = None
 ) -> List[Dict]:
-    """Gera variações de copy usando lógica do ad-copywriter"""
+    """Gera variações de copy usando lógica do ad-copywriter com especialização por vertical"""
     variants = []
 
     # Based on objective, generate appropriate copy structure
@@ -246,8 +287,111 @@ def generate_copy(
     product = briefing.get("product", "nosso produto")
     client = briefing.get("client", "marca")
 
-    # Copy templates based on objective
-    if objective == "CONVERSIONS":
+    # Vertical-specific copy templates
+    vertical_templates = {
+        "concessionarias": {
+            "CONVERSIONS": [
+                {
+                    "name": "Test Drive Focado",
+                    "headline": f"Agende Seu Test Drive {product}",
+                    "primary_text": f"Experimente {product} na {client}. Condições especiais de financiamento. Horários flexíveis.",
+                    "cta": "Agendar Test Drive",
+                },
+                {
+                    "name": "Oferta de Troca",
+                    "headline": f"Troque Seu Carro Por {product}",
+                    "primary_text": f" Avaliação justa do seu usado + condições especiais na {client}. Venha conferir.",
+                    "cta": "Ver Oferta",
+                },
+                {
+                    "name": "Financiamento Zero",
+                    "headline": f"{product} com Entrada Zero",
+                    "primary_text": f"Aprovação rápida, parcelas que cabem no bolso. {client} - sua concessionária de confiança há anos.",
+                    "cta": "Simular Financiamento",
+                },
+            ],
+            "TRAFFIC": [
+                {
+                    "name": "Descoberta",
+                    "headline": f"Descubra {product}",
+                    "primary_text": f"A mais nova chegada na {client}. Tecnologia, conforto e segurança em um só lugar.",
+                    "cta": "Conhecer",
+                },
+            ],
+        },
+        "imobiliarias": {
+            "CONVERSIONS": [
+                {
+                    "name": "Tour Virtual",
+                    "headline": f"Tour Virtual: {product}",
+                    "primary_text": f"Conheça {product} sem sair de casa. {client} - imóveis selecionados com carinho.",
+                    "cta": "Ver Tour",
+                },
+                {
+                    "name": "Investimento",
+                    "headline": f"Investimento Inteligente em {product}",
+                    "primary_text": f"{client} apresenta {product}. Localização privilegiada, valorização garantida.",
+                    "cta": "Agendar Visita",
+                },
+            ],
+        },
+        "ecommerce": {
+            "CONVERSIONS": [
+                {
+                    "name": "Promoção Limitada",
+                    "headline": f"🔥 {product} com Desconto Exclusivo",
+                    "primary_text": f"Aproveite! {product} com condição especial por tempo limitado. {client} - entrega rápida.",
+                    "cta": "Comprar Agora",
+                },
+                {
+                    "name": "Social Proof",
+                    "headline": f"Milhares Já Compraram {product}",
+                    "primary_text": f"⭐⭐⭐⭐⭐ Avaliações de clientes reais. {client} - qualidade garantida.",
+                    "cta": "Ver Produto",
+                },
+            ],
+        },
+        "educacao": {
+            "CONVERSIONS": [
+                {
+                    "name": "Inscrição",
+                    "headline": f"Vagas Limitadas: {product}",
+                    "primary_text": f"Garanta sua vaga em {product}. {client} - educação de qualidade para seu futuro.",
+                    "cta": "Inscrever-se",
+                },
+                {
+                    "name": "Carreiras",
+                    "headline": f"Comece Sua Jornada Profissional",
+                    "primary_text": f"{product} na {client}. Professores renomados, metodologia atualizada.",
+                    "cta": "Saiba Mais",
+                },
+            ],
+        },
+        "saude": {
+            "CONVERSIONS": [
+                {
+                    "name": "Agendamento",
+                    "headline": f"Agende Sua Consulta: {product}",
+                    "primary_text": f"{client} - cuidado com sua saúde. Profissionais qualificados, atendimento humanizado.",
+                    "cta": "Agendar",
+                },
+                {
+                    "name": "Tratamento",
+                    "headline": f"Tratamento {product}",
+                    "primary_text": f"Tecnologia e cuidado na {client}. Resultados comprovados, equipe especializada.",
+                    "cta": "Conheça",
+                },
+            ],
+        },
+    }
+
+    # Use vertical-specific templates if available
+    if vertical and vertical in vertical_templates:
+        templates = vertical_templates[vertical].get(
+            objective, vertical_templates[vertical].get("CONVERSIONS", [])
+        )
+    # Default templates
+    elif objective == "CONVERSIONS":
         templates = [
             {
                 "name": "Direct Conversion",
@@ -328,6 +472,7 @@ def generate_copy(
             "primary_text": template["primary_text"],
             "cta": template["cta"],
             "format": "feed",  # default
+            "vertical": vertical,
             "created_at": datetime.now().isoformat(),
         }
         variants.append(variant)
@@ -335,9 +480,9 @@ def generate_copy(
     return variants
 
 
-def generate_targeting(briefing: Dict, brand_voice: Dict) -> Dict:
-    """Gera configurações de targeting"""
-    # Default targeting
+def generate_targeting(briefing: Dict, brand_voice: Dict, vertical: str = None) -> Dict:
+    """Gera configurações de targeting com especialização por vertical"""
+    # Base targeting
     targeting = {
         "age_min": 25,
         "age_max": 55,
@@ -348,6 +493,61 @@ def generate_targeting(briefing: Dict, brand_voice: Dict) -> Dict:
         "custom_audiences": [],
         "lookalikes": [],
     }
+
+    # Vertical-specific targeting
+    vertical_targeting = {
+        "concessionarias": {
+            "age_min": 25,
+            "age_max": 55,
+            "interests": [
+                {"name": "Carros", "id": "6003187587541"},
+                {"name": "Automóveis", "id": "6003187587541"},
+                {"name": "Financiamento de carro", "id": "6003567587846"},
+            ],
+            "behaviors": [{"name": "Engaged shoppers", "id": "300600668479841"}],
+            "custom_audiences": ["Website visitors 30 days", "Lead form completions"],
+            "offline_conversion_window": 7,  # Minimo7 dias para concessionárias
+        },
+        "imobiliarias": {
+            "age_min": 30,
+            "age_max": 65,
+            "interests": [
+                {"name": "Imóveis", "id": "6003209556441"},
+                {"name": "Investimento imobiliário", "id": "6003210128754"},
+            ],
+            "custom_audiences": ["Website visitors 60 days", "Property viewers"],
+        },
+        "ecommerce": {
+            "age_min": 18,
+            "age_max": 55,
+            "interests": [],  # Dynamic based on product catalog
+            "behaviors": [{"name": "Engaged shoppers", "id": "300600668479841"}],
+            "custom_audiences": ["Cart abandoners", "Product viewers"],
+        },
+        "educacao": {
+            "age_min": 18,
+            "age_max": 45,
+            "interests": [
+                {"name": "Educação", "id": "6003220556441"},
+                {"name": "Cursos", "id": "6003220556841"},
+            ],
+            "custom_audiences": ["Website visitors", "Form submissions"],
+        },
+        "saude": {
+            "age_min": 25,
+            "age_max": 65,
+            "interests": [
+                {"name": "Saúde", "id": "6003237587541"},
+                {"name": "Bem-estar", "id": "6003237587841"},
+            ],
+            "custom_audiences": ["Website visitors", "Appointment seekers"],
+            "privacy_compliance": "LGPD",  # LGPD/HIPAA compliance note
+        },
+    }
+
+    # Apply vertical-specific targeting if available
+    if vertical and vertical in vertical_targeting:
+        targeting.update(vertical_targeting[vertical])
 
     # Apply brand voice learnings
     learned = brand_voice.get("learned_preferences", {})
@@ -493,6 +693,19 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Seletor de Vertical no topo
+if st.session_state.workflow_state.get("vertical"):
+    vertical_key = st.session_state.workflow_state["vertical"]
+    vertical_info = VERTICAL_AGENTS.get(vertical_key, {})
+    st.info(
+        f"📊 **Vertical:** {vertical_info.get('name', vertical_key)} - {vertical_info.get('description', '')}"
+    )
+    col1, col2, col3 = st.columns([2, 2, 1])
+    with col3:
+        if st.button("🔄 Trocar", key="change_vertical"):
+            st.session_state.workflow_state["vertical"] = None
+            st.rerun()
+
 # Container principal
 chat_container = st.container()
 
@@ -503,50 +716,87 @@ current_step = st.session_state.workflow_state["step"]
 # ETAPA: START
 if current_step == "start":
     with chat_container:
-        # Mensagem inicial
-        st.markdown("""
-        ### 👋 Bem-vindo ao Neuro Skills Agent!
-        
-        Sou seu assistente para criação e gestão de campanhas Meta Ads. Vou te ajudar com:
-        
-        - 📤 **Upload de criativos** (vídeos e imagens)
-        - 📝 **Análise de briefing**
-        - ✍️ **Geração de copy** baseada na voz da marca
-        - 🎯 **Criação de campanhas** com targeting otimizado
-        - 📊 **Acompanhamento de performance**
-        
-        **Para começar, preciso saber:**
-        """)
+        # Verificar se vertical está selecionada
+        if not st.session_state.workflow_state.get("vertical"):
+            st.markdown("""
+            ### 👋 Bem-vindo ao Neuro Skills Agent!
+            
+            Escolha sua vertical para começar:
+            """)
 
-        # Verificar se tem cliente e conta configurados
-        if not active_client:
-            st.warning("⚠️ Você precisa cadastrar um cliente primeiro.")
-            if st.button("➕ Cadastrar Cliente", type="primary"):
-                st.session_state.workflow_state["step"] = "new_client"
-                st.rerun()
-        elif not active_account:
-            st.warning("⚠️ Você precisa configurar uma conta Meta Ads.")
-            if st.button("⚙️ Configurar Conta", type="primary"):
-                st.session_state.workflow_state["step"] = "config_account"
-                st.rerun()
+            # Mostrar opções de vertical
+            cols = st.columns(5)
+            for i, (key, vertical) in enumerate(VERTICAL_AGENTS.items()):
+                with cols[i]:
+                    if st.button(
+                        vertical["name"],
+                        key=f"vertical_{key}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.workflow_state["vertical"] = key
+                        st.rerun()
+                    st.caption(vertical["description"])
+
+            st.markdown("---")
+            st.markdown("### 🎯 O que cada vertical oferece:")
+
+            for key, vertical in VERTICAL_AGENTS.items():
+                with st.expander(f"{vertical['name']} - {vertical['description']}"):
+                    st.markdown(f"**Segmentação:** {vertical['segmentation_help']}")
+                    st.markdown("**Recursos:**")
+                    for feature in vertical["features"]:
+                        st.markdown(f"- {feature}")
+
         else:
-            st.success(f"✅ Pronto para começar!")
-            st.markdown(f"**Cliente:** {active_client.get('name')}")
-            st.markdown(f"**Conta:** {active_account.get('name')}")
+            # Vertical selecionada - mostrar workflow normal
+            vertical_key = st.session_state.workflow_state["vertical"]
+            vertical_info = VERTICAL_AGENTS.get(vertical_key, {})
 
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button(
-                    "📤 Upload de Criativos", type="primary", use_container_width=True
-                ):
-                    st.session_state.workflow_state["step"] = "upload"
+            st.markdown("""
+            ### 👋 Bem-vindo ao Neuro Skills Agent!
+            
+            Sou seu assistente para criação e gestão de campanhas Meta Ads. Vou te ajudar com:
+            
+            - 📤 **Upload de criativos** (vídeos e imagens)
+            - 📝 **Análise de briefing**
+            - ✍️ **Geração de copy** baseada na voz da marca
+            - 🎯 **Criação de campanhas** com targeting otimizado
+            - 📊 **Acompanhamento de performance**
+            
+            **Para começar, preciso saber:**
+            """)
+
+            # Verificar se tem cliente e conta configurados
+            if not active_client:
+                st.warning("⚠️ Você precisa cadastrar um cliente primeiro.")
+                if st.button("➕ Cadastrar Cliente", type="primary"):
+                    st.session_state.workflow_state["step"] = "new_client"
                     st.rerun()
-            with col2:
-                if st.button(
-                    "📝 Criar Briefing", type="primary", use_container_width=True
-                ):
-                    st.session_state.workflow_state["step"] = "briefing"
+            elif not active_account:
+                st.warning("⚠️ Você precisa configurar uma conta Meta Ads.")
+                if st.button("⚙️ Configurar Conta", type="primary"):
+                    st.session_state.workflow_state["step"] = "config_account"
                     st.rerun()
+            else:
+                st.success(f"✅ Pronto para começar!")
+                st.markdown(f"**Cliente:** {active_client.get('name')}")
+                st.markdown(f"**Conta:** {active_account.get('name')}")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button(
+                        "📤 Upload de Criativos",
+                        type="primary",
+                        use_container_width=True,
+                    ):
+                        st.session_state.workflow_state["step"] = "upload"
+                        st.rerun()
+                with col2:
+                    if st.button(
+                        "📝 Criar Briefing", type="primary", use_container_width=True
+                    ):
+                        st.session_state.workflow_state["step"] = "briefing"
+                        st.rerun()
 
 # ETAPA: NEW CLIENT
 elif current_step == "new_client":
@@ -973,13 +1223,18 @@ elif current_step == "generate":
     with chat_container:
         st.markdown("### ✍️ Gerando Copy e Targeting")
 
+        # Mostrar vertical selecionada
+        vertical = st.session_state.workflow_state.get("vertical")
+        if vertical and vertical in VERTICAL_AGENTS:
+            st.info(f"📊 **Vertical:** {VERTICAL_AGENTS[vertical]['name']}")
+
         # Animação de processamento
         with st.spinner("Analisando briefing e gerando copy..."):
             import time
 
             time.sleep(1)
 
-            # Obterbrand voice do cliente
+            # Obter brand voice do cliente
             client_id = st.session_state.memory.get_active_client()
             brand_voice = (
                 st.session_state.memory.get_brand_voice(client_id) if client_id else {}
@@ -988,12 +1243,12 @@ elif current_step == "generate":
             # Obter briefing analysis
             briefing = st.session_state.workflow_state.get("briefing_analysis", {})
 
-            # Gerar copy
-            copy_variants = generate_copy(briefing, brand_voice)
+            # Gerar copy com especialização por vertical
+            copy_variants = generate_copy(briefing, brand_voice, vertical=vertical)
             st.session_state.workflow_state["copy_variants"] = copy_variants
 
-            # Gerar targeting
-            targeting = generate_targeting(briefing, brand_voice)
+            # Gerar targeting com especialização por vertical
+            targeting = generate_targeting(briefing, brand_voice, vertical=vertical)
             st.session_state.workflow_state["targeting"] = targeting
 
         st.success("✅ Copy e Targeting gerados com sucesso!")
@@ -1032,7 +1287,15 @@ elif current_step == "generate":
 
         # Mostrar targeting
         st.markdown("### 🎯 Targeting")
-        st.json(targeting)
+
+        # Mostrar informações de vertical
+        if vertical and vertical in VERTICAL_AGENTS:
+            st.markdown(
+                f"**Segmentação:** {VERTICAL_AGENTS[vertical]['segmentation_help']}"
+            )
+
+        with st.expander("Ver configurações detalhadas"):
+            st.json(targeting)
 
         # Próximo passo
         st.markdown("---")

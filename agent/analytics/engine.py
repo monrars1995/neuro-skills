@@ -14,6 +14,85 @@ from pathlib import Path
 class AnalyticsEngine:
     """Motor de análise de performance."""
 
+    # Vertical-specific benchmarks and thresholds
+    VERTICAL_BENCHMARKS = {
+        "concessionarias": {
+            "cpa_good": 150,  # CPA bom <R$150
+            "cpa_warning": 300,  # CPA atenção > R$300
+            "roas_good": 2.5,  # ROAS bom > 2.5x
+            "roas_warning": 1.5,  # ROAS atenção < 1.5x
+            "ctr_good": 1.5,  # CTR bom > 1.5%
+            "conv_window": 7,  # Janela de conversão offline (dias mín)
+            "offline_tracking": True,
+            "insights": [
+                "Ciclo de venda longo (7-90 dias)",
+                "Conversão offline é crítica",
+                "Integração CRM necessária",
+                "Test drive como conversão intermediária",
+            ],
+        },
+        "imobiliarias": {
+            "cpa_good": 80,
+            "cpa_warning": 200,
+            "roas_good": 3.0,
+            "roas_warning": 1.5,
+            "ctr_good": 1.2,
+            "conv_window": 30,
+            "offline_tracking": True,
+            "insights": [
+                "LTV alto compensa CPA elevado",
+                "Tour virtual aumenta conversão",
+                "Product Catalog recomendado",
+                "Remarketing é essencial",
+            ],
+        },
+        "ecommerce": {
+            "cpa_good": 25,
+            "cpa_warning": 50,
+            "roas_good": 4.0,
+            "roas_warning": 2.0,
+            "ctr_good": 2.0,
+            "conv_window": 7,
+            "offline_tracking": False,
+            "insights": [
+                "Ciclo curto (1-7 dias)",
+                "DPA essencial",
+                "Cart abandonment campaigns",
+                "Dynamic retargeting crítico",
+            ],
+        },
+        "educacao": {
+            "cpa_good": 50,
+            "cpa_warning": 150,
+            "roas_good": 3.5,
+            "roas_warning": 1.8,
+            "ctr_good": 1.5,
+            "conv_window": 14,
+            "offline_tracking": False,  # Geralmente online
+            "insights": [
+                "Sazonalidade forte (início do ano, férias)",
+                "LTV por aluno é chave",
+                "CRM integration importante",
+                "Lead scoring recomendado",
+            ],
+        },
+        "saude": {
+            "cpa_good": 40,
+            "cpa_warning": 100,
+            "roas_good": 3.0,
+            "roas_warning": 1.5,
+            "ctr_good": 1.8,
+            "conv_window": 7,
+            "offline_tracking": True,
+            "insights": [
+                "LGPD/HIPAA compliance obrigatório",
+                "Privacy-safe targeting",
+                "Patient LTV calculation",
+                "Consultation booking como conversão",
+            ],
+        },
+    }
+
     def __init__(self, api_client, memory_manager):
         self.api = api_client
         self.memory = memory_manager
@@ -770,3 +849,313 @@ class AnalyticsEngine:
                 default={},
             ),
         }
+
+    # ==================== VERTICAL-SPECIFIC ANALYSIS ====================
+
+    def analyze_by_vertical(
+        self, vertical: str, date_range: str = "last_7d"
+    ) -> Dict:
+        """
+        Análise específica por vertical.
+
+        Args:
+            vertical: Tipo de vertical (concessionarias, imobiliarias, etc)
+            date_range: Período de análise
+
+        Returns:
+            Dict com análise vertical-specific
+        """
+        # Obter benchmarks da vertical
+        benchmarks = self.VERTICAL_BENCHMARKS.get(vertical, self.VERTICAL_BENCHMARKS["ecommerce"])
+
+        # Análise base
+        analysis = self.analyze_account(date_range, "campaign")
+
+        # Adicionar métricas vertical-specific
+        analysis["vertical"] = vertical
+        analysis["benchmarks"] = benchmarks
+        analysis["vertical_insights"] = self._generate_vertical_insights(
+            analysis["metrics"], benchmarks, vertical
+        )
+        analysis["vertical_recommendations"] = self._generate_vertical_recommendations(
+            analysis["metrics"], benchmarks, vertical
+        )
+        analysis["alerts"] = self._generate_vertical_alerts(
+            analysis["metrics"], benchmarks, vertical
+        )
+
+        # Offline conversion setup for concessionarias
+        if vertical == "concessionarias":
+            analysis["offline_conversion_setup"] = self._get_offline_conversion_checklist()
+
+        return analysis
+
+    def _generate_vertical_insights(
+        self, metrics: Dict, benchmarks: Dict, vertical: str
+    ) -> List[Dict]:
+        """Gera insights específicos da vertical."""
+        insights = []
+
+        cpa = metrics.get("cpa_purchase", metrics.get("cpa", 0))
+        roas = metrics.get("roas", 0)
+        ctr = metrics.get("ctr", 0)
+
+        # CPA insights
+        if cpa > 0:
+            if cpa <= benchmarks["cpa_good"]:
+                insights.append({
+                    "type": "success",
+                    "category": "cpa",
+                    "message": f"CPA dentro do benchmark para {vertical} (R${cpa:.2f} < R${benchmarks['cpa_good']:.2f})",
+                    "vertical_specific": True,
+                })
+            elif cpa >= benchmarks["cpa_warning"]:
+                insights.append({
+                    "type": "critical",
+                    "category": "cpa",
+                    "message": f"CPA acima do limiar crítico para {vertical} (R${cpa:.2f} > R${benchmarks['cpa_warning']:.2f})",
+                    "action": "Pausar criativos com baixa performance imediatamente",
+                    "vertical_specific": True,
+                })
+
+        # ROAS insights
+        if roas > 0:
+            if roas >= benchmarks["roas_good"]:
+                insights.append({
+                    "type": "success",
+                    "category": "roas",
+                    "message": f"ROAS excelente para {vertical} ({roas:.2f}x > {benchmarks['roas_good']:.2f}x)",
+                    "action": "Escalar campanha gradualmente (+20-30% orçamento)",
+                    "vertical_specific": True,
+                })
+            elif roas < benchmarks["roas_warning"]:
+                insights.append({
+                    "type": "critical",
+                    "category": "roas",
+                    "message": f"ROAS abaixo do mínimo para {vertical} ({roas:.2f}x < {benchmarks['roas_warning']:.2f}x)",
+                    "action": "Revisar estratégia completa da vertical",
+                    "vertical_specific": True,
+                })
+
+        # CTR insights
+        if ctr > 0:
+            if ctr >= benchmarks["ctr_good"]:
+                insights.append({
+                    "type": "success",
+                    "category": "ctr",
+                    "message": f"CTR acima do benchmark para {vertical} ({ctr:.2f}% > {benchmarks['ctr_good']:.2f}%)",
+                    "vertical_specific": True,
+                })
+
+        # Vertical-specific insights
+        forinsight_text in benchmarks.get("insights", []):
+            insights.append({
+                "type": "info",
+                "category": "vertical",
+                "message": insight_text,
+                "vertical_specific": True,
+            })
+
+        return insights
+
+    def _generate_vertical_recommendations(
+        self, metrics: Dict, benchmarks: Dict, vertical: str
+    ) -> List[Dict]:
+        """Gera recomendações específicas da vertical."""
+        recommendations = []
+
+        cpa = metrics.get("cpa_purchase", metrics.get("cpa", 0))
+        roas = metrics.get("roas", 0)
+
+        # Concessionárias
+        if vertical == "concessionarias":
+            recommendations.extend([
+                {
+                    "priority": "high",
+                    "action": "setup_offline_conversions",
+                    "message": "Configurar conversão offline com CRM",
+                    "params": {"min_window_days": 7},
+                },
+                {
+                    "priority": "medium",
+                    "action": "test_drive_audience",
+                    "message": "Criar público de interesse em test drive",
+                    "params": {"audience_type": "test_drive_intent"},
+                },
+            ])
+
+            if cpa > benchmarks["cpa_warning"]:
+                recommendations.append({
+                    "priority": "critical",
+                    "action": "pause_high_cpa_ads",
+                    "message": f"CPA muito alto para concessionárias. Pausar ads com CPA > R${benchmarks['cpa_warning']:.0f}",
+                })
+
+        # Imobiliárias
+        elif vertical == "imobiliarias":
+            recommendations.extend([
+                {
+                    "priority": "high",
+                    "action": "setup_product_catalog",
+                    "message": "Configurar Product Catalog para imóveis",
+                },
+                {
+                    "priority": "medium",
+                    "action": "create_tour_virtual_audience",
+                    "message": "Criar público de visitantes de tours virtuais",
+                },
+            ])
+
+            if roas > benchmarks["roas_good"]:
+                recommendations.append({
+                    "priority": "high",
+                    "action": "scale_high_ltv",
+                    "message": "ROAS alto indica LTV forte. Escalar 30%",
+                })
+
+        # E-commerce
+        elif vertical == "ecommerce":
+            recommendations.extend([
+                {
+                    "priority": "high",
+                    "action": "setup_dpa",
+                    "message": "Configurar Dynamic Product Ads",
+                },
+                {
+                    "priority": "high",
+                    "action": "cart_abandonment_campaign",
+                    "message": "Criar campanha de carrinho abandonado",
+                },
+                {
+                    "priority": "medium",
+                    "action": "dynamic_retargeting",
+                    "message": "Configurar retargeting dinâmico",
+                },
+            ])
+
+        # Educação
+        elif vertical == "educacao":
+            recommendations.extend([
+                {
+                    "priority": "medium",
+                    "action": "seasonal_calendar",
+                    "message": "Verificar calendário sazonal (volta às aulas, férias)",
+                },
+                {
+                    "priority": "medium",
+                    "action": "ltv_tracking",
+                    "message": "Configurar tracking de LTV por aluno",
+                },
+            ])
+
+        # Saúde
+        elif vertical == "saude":
+            recommendations.extend([
+                {
+                    "priority": "critical",
+                    "action": "lgpd_compliance_check",
+                    "message": "Verificar compliance LGPD/HIPAA",
+                },
+                {
+                    "priority": "high",
+                    "action": "privacy_safe_targeting",
+                    "message": "Usar apenas targeting permitido pela LGPD",
+                },
+            ])
+
+        return recommendations
+
+    def _generate_vertical_alerts(
+        self, metrics: Dict, benchmarks: Dict, vertical: str
+    ) -> List[Dict]:
+        """Gera alertas específicos da vertical."""
+        alerts = []
+
+        cpa = metrics.get("cpa_purchase", metrics.get("cpa", 0))
+
+        # Alertas críticos
+        if vertical == "concessionarias":
+            if metrics.get("frequency", 0)> 4:
+                alerts.append({
+                    "level": "warning",
+                    "message": f"Frequência alta ({metrics['frequency']:.1f}) - Público saturado para ciclo de venda longo",
+                    "action": "Expandir público ou pausar temporariamente",
+                })
+
+        elif vertical == "saude":
+            # Verificar se targeting inclui dados sensíveis
+            alerts.append({
+                "level": "info",
+                "message": "Revisar targeting para compliance LGPD",
+                "action": "Remover interesses relacionados a condições de saúde",
+            })
+
+        # CPA crítico geral
+        if cpa > benchmarks["cpa_warning"]:
+            alerts.append({
+                "level": "critical",
+                "message": f"CPA crítico: R${cpa:.2f} (limiar: R${benchmarks['cpa_warning']:.2f})",
+                "action": "Pausar campanhas imediatamente e revisar estratégia",
+            })
+
+        return alerts
+
+    def _get_offline_conversion_checklist(self) -> List[Dict]:
+        """Retorna checklist para configuração de conversão offline."""
+        return [
+            {
+                "step": 1,
+                "title": "Integração CRM",
+                "description": "Conectar CRM com Meta Business Manager",
+                "required": True,
+                "details": [
+                    "Exportar dados de vendas do CRM",
+                    "Mapear campos: nome, email, telefone, valor da venda",
+                    "Configurar hash SHA256 para dados sensíveis",
+                ],
+            },
+            {
+                "step": 2,
+                "title": "Upload de Conversões",
+                "description": "Configurar upload de conversões offline",
+                "required": True,
+                "details": [
+                    "Criar Event Source Group",
+                    "Associar Pixel/CAPI",
+                    "Definir janela de atribuição (min 7 dias)",
+                ],
+            },
+            {
+                "step": 3,
+                "title": "Regras de Atribuição",
+                "description": "Configurar regras de atribuição",
+                "required": True,
+                "details": [
+                    "Definir evento de conversão (purchase/lead)",
+                    "Configurar deduplicação de eventos",
+                    "Valor da venda vs valor do veículo",
+                ],
+            },
+            {
+                "step": 4,
+                "title": "Validação",
+                "description": "Validar configuração",
+                "required": True,
+                "details": [
+                    "Testar com algumas vendas",
+                    "Verificar Events Manager",
+                    "Monitorar taxa de match",
+                ],
+            },
+            {
+                "step": 5,
+                "title": "Otimização",
+                "description": "Configurar otimização",
+                "required": False,
+                "details": [
+                    "Criar públicos based on offline conversions",
+                    "Configurar lookalikes de compradores",
+                    "Usar em conjunto com eventos online",
+                ],
+            },
+        ]

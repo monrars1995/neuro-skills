@@ -1977,6 +1977,13 @@ elif current_step == "analytics":
     with chat_container:
         st.markdown("### 📈 Analytics")
 
+        # Mostrar vertical selecionada
+        vertical = st.session_state.workflow_state.get("vertical")
+        if vertical and vertical in VERTICAL_AGENTS:
+            st.info(
+                f"📊 Análise específica para: **{VERTICAL_AGENTS[vertical]['name']}**"
+            )
+
         if not active_account:
             st.warning("⚠️ Configure uma conta Meta Ads primeiro.")
             if st.button("⚙️ Configurar Conta"):
@@ -1991,8 +1998,14 @@ elif current_step == "analytics":
                 )
 
             # Tabs
-            tab1, tab2, tab3, tab4 = st.tabs(
-                ["📊 Performance", "🎨 Criativos", "👤 Públicos", "📋 Relatórios"]
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(
+                [
+                    "📊 Performance",
+                    "🎨 Criativos",
+                    "👤 Públicos",
+                    "🏢 Vertical",
+                    "📋 Relatórios",
+                ]
             )
 
             with tab1:
@@ -2042,6 +2055,142 @@ elif current_step == "analytics":
                 st.info("Em desenvolvimento - Análise de performance por público")
 
             with tab4:
+                st.subheader("Análise por Vertical")
+
+                # Seletor de vertical para análise
+                vertical_to_analyze = st.selectbox(
+                    "Selecione a vertical",
+                    list(VERTICAL_AGENTS.keys()),
+                    format_func=lambda x: VERTICAL_AGENTS[x]["name"],
+                    index=list(VERTICAL_AGENTS.keys()).index(vertical)
+                    if vertical
+                    else 0,
+                )
+
+                st.markdown("---")
+
+                # Benchmarks da vertical
+                benchmarks = st.session_state.analytics.VERTICAL_BENCHMARKS.get(
+                    vertical_to_analyze, {}
+                )
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    st.metric("CPA Bom", f"R${benchmarks.get('cpa_good', 0):.2f}")
+                    st.metric(
+                        "CPA Atenção", f"R${benchmarks.get('cpa_warning', 0):.2f}"
+                    )
+
+                with col2:
+                    st.metric("ROAS Bom", f"{benchmarks.get('roas_good', 0):.1f}x")
+                    st.metric(
+                        "ROAS Atenção", f"{benchmarks.get('roas_warning', 0):.1f}x"
+                    )
+
+                with col3:
+                    st.metric("CTR Bom", f"{benchmarks.get('ctr_good', 0):.1f}%")
+                    st.metric(
+                        "Janela Conv.", f"{benchmarks.get('conv_window', 0)} dias"
+                    )
+
+                st.markdown("---")
+
+                # Insights específicos da vertical
+                st.markdown("### 💡 Insights da Vertical")
+
+                for insight in benchmarks.get("insights", []):
+                    st.markdown(f"- {insight}")
+
+                # Botão para análise completa
+                if st.button(
+                    f"🔍 Analisar {VERTICAL_AGENTS[vertical_to_analyze]['name']}",
+                    type="primary",
+                ):
+                    with st.spinner(
+                        f"Analisando performance de {VERTICAL_AGENTS[vertical_to_analyze]['name']}..."
+                    ):
+                        result = st.session_state.analytics.analyze_by_vertical(
+                            vertical=vertical_to_analyze, date_range=date_range
+                        )
+
+                        # Mostrar métricas
+                        st.markdown("### 📊 Métricas")
+
+                        col1, col2, col3, col4 = st.columns(4)
+                        metrics = result.get("metrics", {})
+
+                        with col1:
+                            st.metric("Gasto", f"R${metrics.get('spend', 0):.2f}")
+                        with col2:
+                            st.metric("CTR", f"{metrics.get('ctr', 0):.2f}%")
+                        with col3:
+                            cpa = metrics.get("cpa_purchase", metrics.get("cpa", 0))
+                            st.metric("CPA", f"R${cpa:.2f}")
+                        with col4:
+                            st.metric("ROAS", f"{metrics.get('roas', 0):.2f}x")
+
+                        # Mostrar insights vertical-specific
+                        st.markdown("---")
+                        st.markdown("### 💡 Insights")
+
+                        for insight in result.get("vertical_insights", []):
+                            if insight.get("type") == "success":
+                                st.success(insight["message"])
+                            elif insight.get("type") == "critical":
+                                st.error(insight["message"])
+                            elif insight.get("type") == "warning":
+                                st.warning(insight["message"])
+                            else:
+                                st.info(insight["message"])
+
+                        # Mostrar recomendações
+                        st.markdown("---")
+                        st.markdown("### 🎯 Recomendações")
+
+                        for rec in result.get("vertical_recommendations", []):
+                            priority = rec.get("priority", "medium")
+                            if priority == "critical":
+                                st.error(f"🚨 {rec['message']}")
+                            elif priority == "high":
+                                st.warning(f"⚠️ {rec['message']}")
+                            else:
+                                st.info(f"ℹ️ {rec['message']}")
+
+                        # Mostrar alertas
+                        alerts = result.get("alerts", [])
+                        if alerts:
+                            st.markdown("---")
+                            st.markdown("### ⚠️ Alertas")
+
+                            for alert in alerts:
+                                level = alert.get("level", "info")
+                                if level == "critical":
+                                    st.error(f"🚨 {alert['message']}")
+                                elif level == "warning":
+                                    st.warning(f"⚠️ {alert['message']}")
+                                else:
+                                    st.info(f"ℹ️ {alert['message']}")
+
+                        # Offline conversion setup para concessionárias
+                        if vertical_to_analyze == "concessionarias":
+                            st.markdown("---")
+                            st.markdown("### 🔧 Checklist de Conversão Offline")
+
+                            checklist = result.get("offline_conversion_setup", [])
+                            for step in checklist:
+                                with st.expander(
+                                    f"**{step['step']}. {step['title']}**"
+                                ):
+                                    st.markdown(f"**{step['description']}**")
+                                    st.markdown(
+                                        f"*Obrigatório:* {'Sim' if step['required'] else 'Não'}"
+                                    )
+                                    st.markdown("**Detalhes:**")
+                                    for detail in step.get("details", []):
+                                        st.markdown(f"- {detail}")
+
+            with tab5:
                 st.subheader("Gerar Relatório")
 
                 with st.form("generate_report"):

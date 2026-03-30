@@ -1,0 +1,56 @@
+{
+  "name": "neuro-skills",
+  "version": "2.3.0",
+  "description": "O bastidor técnico que o mercado não mostra - Framework de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI",
+  "author": "Monrars <@monrars>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monrars1995/neuro-skills.git"
+  },
+  "homepage": "https://goldneuron.io/",
+  "bugs": {
+    "url": "https://github.com/monrars1995/neuro-skills/issues"
+  },
+  "keywords": [
+    "meta-ads",
+    "facebook-ads",
+    "instagram-ads",
+    "claude-code",
+    "openai-codex",
+    "gemini-cli",
+    "automation",
+    "traffic",
+    "marketing",
+    "ai-agents"
+  ],
+  "bin": {
+    "neuro-skills": "./bin/neuro-skills.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "skills/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node lib/postinstall.js",
+    "test": "node lib/test.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.1.1",
+    "inquirer": "^8.2.5",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
+}

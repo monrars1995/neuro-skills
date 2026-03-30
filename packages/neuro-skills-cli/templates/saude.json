@@ -1,0 +1,35 @@
+{
+  "name": "Exemplo - Saúde",
+  "vertical": "saude",
+  "account_id": "act_123456789",
+  "pixel_id": "123456789012345",
+  "page_id": "123456789012345",
+  "objectives": ["lead_generation", "messages", "conversions"],
+  "budget_daily": 150,
+  "currency": "BRL",
+  "timezone": "America/Sao_Paulo",
+  "attribution_window": 14,
+  "lgpd_compliance": {
+    "enabled": true,
+    "consent_required": true,
+    "data_retention_days": 90,
+    "anonymization": true
+  },
+  "hipaa_compliance": {
+    "enabled": true,
+    "phi_restricted": true,
+    "secure_messaging": true
+  },
+  "specialties": ["clinico_geral", "dermatologia", "ortopedia", "cardiologia", "odontologia"],
+  "appointment_types": ["consulta", "exame", "procedimento"],
+  "offline_conversion": {
+    "enabled": true,
+    "appointment_tracking": true,
+    "min_days": 1
+  },
+  "benchmarks": {
+    "cost_per_appointment_target": 40,
+    "appointment_show_rate_target": 0.85,
+    "conversion_rate_target": 0.15
+  }
+}

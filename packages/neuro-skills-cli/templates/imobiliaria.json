@@ -1,0 +1,24 @@
+{
+  "name": "Exemplo - Imobiliária",
+  "vertical": "imobiliarias",
+  "account_id": "act_123456789",
+  "pixel_id": "123456789012345",
+  "page_id": "123456789012345",
+  "objectives": ["lead_generation", "conversions"],
+  "budget_daily": 100,
+  "currency": "BRL",
+  "timezone": "America/Sao_Paulo",
+  "attribution_window": 60,
+  "offline_conversion": {
+    "enabled": true,
+    "min_days": 30,
+    "upload_schedule": "weekly"
+  },
+  "benchmarks": {
+    "cost_per_lead_target": 80,
+    "conversion_rate_target": 0.02,
+    "engagement_rate_target": 0.04
+  },
+  "property_types": ["apartamentos", "casas", "terrenos", "comercial"],
+  "regions": ["Centro", "Zona Sul", "Zona Norte", "Zona Oeste"]
+}

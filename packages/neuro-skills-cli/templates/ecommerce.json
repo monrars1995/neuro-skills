@@ -1,0 +1,28 @@
+{
+  "name": "Exemplo - E-commerce",
+  "vertical": "ecommerce",
+  "account_id": "act_123456789",
+  "pixel_id": "123456789012345",
+  "catalog_id": "123456789012345",
+  "objectives": ["conversions", "catalog_sales", "traffic"],
+  "budget_daily": 200,
+  "currency": "BRL",
+  "timezone": "America/Sao_Paulo",
+  "attribution_window": 7,
+  "dynamic_ads": {
+    "enabled": true,
+    "catalog_sync": "real-time"
+  },
+  "benchmarks": {
+    "roas_target": 3.0,
+    "cost_per_purchase_target": 30,
+    "add_to_cart_rate_target": 0.08,
+    "conversion_rate_target": 0.025
+  },
+  "_product_categories": ["eletrônicos", "moda", "casa", "beleza"],
+  "funnel_stages": [
+    {"stage": "awareness", "objective": "reach", "budget_percent": 20},
+    {"stage": "consideration", "objective": "traffic", "budget_percent": 30},
+    {"stage": "conversion", "objective": "conversions", "budget_percent": 50}
+  ]
+}

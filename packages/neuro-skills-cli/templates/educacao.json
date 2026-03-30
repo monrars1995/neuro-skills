@@ -1,0 +1,27 @@
+{
+  "name": "Exemplo - Educação",
+  "vertical": "educacao",
+  "account_id": "act_123456789",
+  "pixel_id": "123456789012345",
+  "page_id": "123456789012345",
+  "objectives": ["lead_generation", "conversions", "video_views"],
+  "budget_daily": 80,
+  "currency": "BRL",
+  "timezone": "America/Sao_Paulo",
+  "attribution_window": 30,
+  "course_types": ["graduacao", "pos-graduacao", "cursos-livres", "idiomas"],
+  "offline_conversion": {
+    "enabled": true,
+    "enrollment_tracking": true,
+    "min_days": 7
+  },
+  "benchmarks": {
+    "cost_per_lead_target": 25,
+    "enrollment_rate_target": 0.10,
+    "completion_rate_target": 0.75
+  },
+  "seasonality": {
+    "peak_months": [1, 2, 7, 8, 12],
+    "enrollment_windows": ["jan-fev", "jul-ago", "dez"]
+  }
+}

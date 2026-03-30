@@ -1,0 +1,22 @@
+{
+  "name": "Exemplo - Concessionária",
+  "vertical": "concessionarias",
+  "account_id": "act_123456789",
+  "pixel_id": "123456789012345",
+  "page_id": "123456789012345",
+  "objectives": ["conversions", "lead_generation", "messages"],
+  "budget_daily": 50,
+  "currency": "BRL",
+  "timezone": "America/Sao_Paulo",
+  "attribution_window": 90,
+  "offline_conversion": {
+    "enabled": true,
+    "min_days": 7,
+    "upload_schedule": "daily"
+  },
+  "benchmarks": {
+    "cost_per_lead_target": 50,
+    "conversion_rate_target": 0.03,
+    "engagement_rate_target": 0.05
+  }
+}

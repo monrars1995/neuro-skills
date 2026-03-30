@@ -4,6 +4,18 @@ Skills de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI.
 
 ## Skills
 
+### 🧠 neuro-ads-manager
+Gerenciador completo de Meta Ads com CRUD, Analytics, Automação e integração API v21.0. Plataforma unificada para gerenciar campanhas de ponta a ponta.
+
+**Funcionalidades:**
+- **CRUD Completo**: Criar, listar, editar e deletar campanhas, ad sets, ads e creatives
+- **Analytics/Relatórios**: Métricas detalhadas, dashboards, análise de performance
+- **Automação/Otimização**: Regras automáticas, escala, pausa por performance
+- **Integração API**: Cliente completo para Meta Graph API v21.0
+- Sistema de memória com armazenamento persistente
+- Rate limiting e tratamento de erros
+- Cache para insights
+
 ### 🎯 meta-ads-manager
 Gerenciador completo de tráfego Meta Ads com integração Graph API v21.0. Gerencia contas, cria campanhas, testes A/B, escala, diagnósticos e relatórios.
 
@@ -42,13 +54,13 @@ Especialista em copy de anúncios que analisa a voz da marca, mantém consistên
 ## Fluxo de Trabalho
 
 ```
-traffic-strategist → ad-copywriter → meta-ads-manager
-     (prep)              (copy)          (executa)
+traffic-strategist → ad-copywriter → [neuro-ads-manager / meta-ads-manager]
+     (prep)              (copy)              (executa)
 ```
 
 1. **traffic-strategist**: Analisa pasta da campanha, valida assets, identifica lacunas
 2. **ad-copywriter**: Gera variações de copy baseado no briefing e voz da marca
-3. **meta-ads-manager**: Cria campanhas, lança anúncios, gerencia orçamentos
+3. **neuro-ads-manager/meta-ads-manager**: Cria campanhas, lança anúncios, gerencia orçamentos
 
 ---
 

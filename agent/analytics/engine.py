@@ -852,9 +852,7 @@ class AnalyticsEngine:
 
     # ==================== VERTICAL-SPECIFIC ANALYSIS ====================
 
-    def analyze_by_vertical(
-        self, vertical: str, date_range: str = "last_7d"
-    ) -> Dict:
+    def analyze_by_vertical(self, vertical: str, date_range: str = "last_7d") -> Dict:
         """
         Análise específica por vertical.
 
@@ -866,7 +864,9 @@ class AnalyticsEngine:
             Dict com análise vertical-specific
         """
         # Obter benchmarks da vertical
-        benchmarks = self.VERTICAL_BENCHMARKS.get(vertical, self.VERTICAL_BENCHMARKS["ecommerce"])
+        benchmarks = self.VERTICAL_BENCHMARKS.get(
+            vertical, self.VERTICAL_BENCHMARKS["ecommerce"]
+        )
 
         # Análise base
         analysis = self.analyze_account(date_range, "campaign")
@@ -886,7 +886,9 @@ class AnalyticsEngine:
 
         # Offline conversion setup for concessionarias
         if vertical == "concessionarias":
-            analysis["offline_conversion_setup"] = self._get_offline_conversion_checklist()
+            analysis["offline_conversion_setup"] = (
+                self._get_offline_conversion_checklist()
+            )
 
         return analysis
 
@@ -903,58 +905,70 @@ class AnalyticsEngine:
         # CPA insights
         if cpa > 0:
             if cpa <= benchmarks["cpa_good"]:
-                insights.append({
-                    "type": "success",
-                    "category": "cpa",
-                    "message": f"CPA dentro do benchmark para {vertical} (R${cpa:.2f} < R${benchmarks['cpa_good']:.2f})",
-                    "vertical_specific": True,
-                })
+                insights.append(
+                    {
+                        "type": "success",
+                        "category": "cpa",
+                        "message": f"CPA dentro do benchmark para {vertical} (R${cpa:.2f} < R${benchmarks['cpa_good']:.2f})",
+                        "vertical_specific": True,
+                    }
+                )
             elif cpa >= benchmarks["cpa_warning"]:
-                insights.append({
-                    "type": "critical",
-                    "category": "cpa",
-                    "message": f"CPA acima do limiar crítico para {vertical} (R${cpa:.2f} > R${benchmarks['cpa_warning']:.2f})",
-                    "action": "Pausar criativos com baixa performance imediatamente",
-                    "vertical_specific": True,
-                })
+                insights.append(
+                    {
+                        "type": "critical",
+                        "category": "cpa",
+                        "message": f"CPA acima do limiar crítico para {vertical} (R${cpa:.2f} > R${benchmarks['cpa_warning']:.2f})",
+                        "action": "Pausar criativos com baixa performance imediatamente",
+                        "vertical_specific": True,
+                    }
+                )
 
         # ROAS insights
         if roas > 0:
             if roas >= benchmarks["roas_good"]:
-                insights.append({
-                    "type": "success",
-                    "category": "roas",
-                    "message": f"ROAS excelente para {vertical} ({roas:.2f}x > {benchmarks['roas_good']:.2f}x)",
-                    "action": "Escalar campanha gradualmente (+20-30% orçamento)",
-                    "vertical_specific": True,
-                })
+                insights.append(
+                    {
+                        "type": "success",
+                        "category": "roas",
+                        "message": f"ROAS excelente para {vertical} ({roas:.2f}x > {benchmarks['roas_good']:.2f}x)",
+                        "action": "Escalar campanha gradualmente (+20-30% orçamento)",
+                        "vertical_specific": True,
+                    }
+                )
             elif roas < benchmarks["roas_warning"]:
-                insights.append({
-                    "type": "critical",
-                    "category": "roas",
-                    "message": f"ROAS abaixo do mínimo para {vertical} ({roas:.2f}x < {benchmarks['roas_warning']:.2f}x)",
-                    "action": "Revisar estratégia completa da vertical",
-                    "vertical_specific": True,
-                })
+                insights.append(
+                    {
+                        "type": "critical",
+                        "category": "roas",
+                        "message": f"ROAS abaixo do mínimo para {vertical} ({roas:.2f}x < {benchmarks['roas_warning']:.2f}x)",
+                        "action": "Revisar estratégia completa da vertical",
+                        "vertical_specific": True,
+                    }
+                )
 
         # CTR insights
         if ctr > 0:
             if ctr >= benchmarks["ctr_good"]:
-                insights.append({
-                    "type": "success",
-                    "category": "ctr",
-                    "message": f"CTR acima do benchmark para {vertical} ({ctr:.2f}% > {benchmarks['ctr_good']:.2f}%)",
-                    "vertical_specific": True,
-                })
+                insights.append(
+                    {
+                        "type": "success",
+                        "category": "ctr",
+                        "message": f"CTR acima do benchmark para {vertical} ({ctr:.2f}% > {benchmarks['ctr_good']:.2f}%)",
+                        "vertical_specific": True,
+                    }
+                )
 
         # Vertical-specific insights
-        forinsight_text in benchmarks.get("insights", []):
-            insights.append({
-                "type": "info",
-                "category": "vertical",
-                "message": insight_text,
-                "vertical_specific": True,
-            })
+        for insight_text in benchmarks.get("insights", []):
+            insights.append(
+                {
+                    "type": "info",
+                    "category": "vertical",
+                    "message": insight_text,
+                    "vertical_specific": True,
+                }
+            )
 
         return insights
 
@@ -969,99 +983,113 @@ class AnalyticsEngine:
 
         # Concessionárias
         if vertical == "concessionarias":
-            recommendations.extend([
-                {
-                    "priority": "high",
-                    "action": "setup_offline_conversions",
-                    "message": "Configurar conversão offline com CRM",
-                    "params": {"min_window_days": 7},
-                },
-                {
-                    "priority": "medium",
-                    "action": "test_drive_audience",
-                    "message": "Criar público de interesse em test drive",
-                    "params": {"audience_type": "test_drive_intent"},
-                },
-            ])
+            recommendations.extend(
+                [
+                    {
+                        "priority": "high",
+                        "action": "setup_offline_conversions",
+                        "message": "Configurar conversão offline com CRM",
+                        "params": {"min_window_days": 7},
+                    },
+                    {
+                        "priority": "medium",
+                        "action": "test_drive_audience",
+                        "message": "Criar público de interesse em test drive",
+                        "params": {"audience_type": "test_drive_intent"},
+                    },
+                ]
+            )
 
             if cpa > benchmarks["cpa_warning"]:
-                recommendations.append({
-                    "priority": "critical",
-                    "action": "pause_high_cpa_ads",
-                    "message": f"CPA muito alto para concessionárias. Pausar ads com CPA > R${benchmarks['cpa_warning']:.0f}",
-                })
+                recommendations.append(
+                    {
+                        "priority": "critical",
+                        "action": "pause_high_cpa_ads",
+                        "message": f"CPA muito alto para concessionárias. Pausar ads com CPA > R${benchmarks['cpa_warning']:.0f}",
+                    }
+                )
 
         # Imobiliárias
         elif vertical == "imobiliarias":
-            recommendations.extend([
-                {
-                    "priority": "high",
-                    "action": "setup_product_catalog",
-                    "message": "Configurar Product Catalog para imóveis",
-                },
-                {
-                    "priority": "medium",
-                    "action": "create_tour_virtual_audience",
-                    "message": "Criar público de visitantes de tours virtuais",
-                },
-            ])
+            recommendations.extend(
+                [
+                    {
+                        "priority": "high",
+                        "action": "setup_product_catalog",
+                        "message": "Configurar Product Catalog para imóveis",
+                    },
+                    {
+                        "priority": "medium",
+                        "action": "create_tour_virtual_audience",
+                        "message": "Criar público de visitantes de tours virtuais",
+                    },
+                ]
+            )
 
             if roas > benchmarks["roas_good"]:
-                recommendations.append({
-                    "priority": "high",
-                    "action": "scale_high_ltv",
-                    "message": "ROAS alto indica LTV forte. Escalar 30%",
-                })
+                recommendations.append(
+                    {
+                        "priority": "high",
+                        "action": "scale_high_ltv",
+                        "message": "ROAS alto indica LTV forte. Escalar 30%",
+                    }
+                )
 
         # E-commerce
         elif vertical == "ecommerce":
-            recommendations.extend([
-                {
-                    "priority": "high",
-                    "action": "setup_dpa",
-                    "message": "Configurar Dynamic Product Ads",
-                },
-                {
-                    "priority": "high",
-                    "action": "cart_abandonment_campaign",
-                    "message": "Criar campanha de carrinho abandonado",
-                },
-                {
-                    "priority": "medium",
-                    "action": "dynamic_retargeting",
-                    "message": "Configurar retargeting dinâmico",
-                },
-            ])
+            recommendations.extend(
+                [
+                    {
+                        "priority": "high",
+                        "action": "setup_dpa",
+                        "message": "Configurar Dynamic Product Ads",
+                    },
+                    {
+                        "priority": "high",
+                        "action": "cart_abandonment_campaign",
+                        "message": "Criar campanha de carrinho abandonado",
+                    },
+                    {
+                        "priority": "medium",
+                        "action": "dynamic_retargeting",
+                        "message": "Configurar retargeting dinâmico",
+                    },
+                ]
+            )
 
         # Educação
         elif vertical == "educacao":
-            recommendations.extend([
-                {
-                    "priority": "medium",
-                    "action": "seasonal_calendar",
-                    "message": "Verificar calendário sazonal (volta às aulas, férias)",
-                },
-                {
-                    "priority": "medium",
-                    "action": "ltv_tracking",
-                    "message": "Configurar tracking de LTV por aluno",
-                },
-            ])
+            recommendations.extend(
+                [
+                    {
+                        "priority": "medium",
+                        "action": "seasonal_calendar",
+                        "message": "Verificar calendário sazonal (volta às aulas, férias)",
+                    },
+                    {
+                        "priority": "medium",
+                        "action": "ltv_tracking",
+                        "message": "Configurar tracking de LTV por aluno",
+                    },
+                ]
+            )
 
         # Saúde
         elif vertical == "saude":
-            recommendations.extend([
-                {
-                    "priority": "critical",
-                    "action": "lgpd_compliance_check",
-                    "message": "Verificar compliance LGPD/HIPAA",
-                },
-                {
-                    "priority": "high",
-                    "action": "privacy_safe_targeting",
-                    "message": "Usar apenas targeting permitido pela LGPD",
-                },
-            ])
+            recommendations.extend(
+                [
+                    {
+                        "priority": "critical",
+                        "action": "lgpd_compliance_check",
+                        "message": "Verificar compliance LGPD/HIPAA",
+                    },
+                    {
+                        "priority": "high",
+                        "action": "privacy_safe_targeting",
+                        "message": "Usar apenas targeting permitido pela LGPD",
+                    },
+                ]
+            )
 
         return recommendations
 
@@ -1075,28 +1103,34 @@ class AnalyticsEngine:
 
         # Alertas críticos
         if vertical == "concessionarias":
-            if metrics.get("frequency", 0)> 4:
-                alerts.append({
-                    "level": "warning",
-                    "message": f"Frequência alta ({metrics['frequency']:.1f}) - Público saturado para ciclo de venda longo",
-                    "action": "Expandir público ou pausar temporariamente",
-                })
+            if metrics.get("frequency", 0) > 4:
+                alerts.append(
+                    {
+                        "level": "warning",
+                        "message": f"Frequência alta ({metrics['frequency']:.1f}) - Público saturado para ciclo de venda longo",
+                        "action": "Expandir público ou pausar temporariamente",
+                    }
+                )
 
         elif vertical == "saude":
             # Verificar se targeting inclui dados sensíveis
-            alerts.append({
-                "level": "info",
-                "message": "Revisar targeting para compliance LGPD",
-                "action": "Remover interesses relacionados a condições de saúde",
-            })
+            alerts.append(
+                {
+                    "level": "info",
+                    "message": "Revisar targeting para compliance LGPD",
+                    "action": "Remover interesses relacionados a condições de saúde",
+                }
+            )
 
         # CPA crítico geral
         if cpa > benchmarks["cpa_warning"]:
-            alerts.append({
-                "level": "critical",
-                "message": f"CPA crítico: R${cpa:.2f} (limiar: R${benchmarks['cpa_warning']:.2f})",
-                "action": "Pausar campanhas imediatamente e revisar estratégia",
-            })
+            alerts.append(
+                {
+                    "level": "critical",
+                    "message": f"CPA crítico: R${cpa:.2f} (limiar: R${benchmarks['cpa_warning']:.2f})",
+                    "action": "Pausar campanhas imediatamente e revisar estratégia",
+                }
+            )
 
         return alerts
 

@@ -1841,6 +1841,114 @@ elif current_step == "automations":
             with tab2:
                 st.subheader("Nova Automação")
 
+                # Mostrar templates da vertical
+                vertical = st.session_state.workflow_state.get("vertical")
+                if vertical and vertical in VERTICAL_AGENTS:
+                    st.markdown(
+                        f"**Templates para {VERTICAL_AGENTS[vertical]['name']}:**"
+                    )
+
+                    templates = (
+                        st.session_state.scheduler.get_vertical_templates(vertical)
+                        if st.session_state.scheduler
+                        else {}
+                    )
+
+                    if templates:
+                        template_names = list(templates.keys())
+                        selected_template = st.selectbox(
+                            "Selecione um template",
+                            ["Customizar"] + template_names,
+                        )
+
+                        if selected_template != "Customizar":
+                            template = templates[selected_template]
+
+                            st.markdown("**Configuração do Template:**")
+                            st.markdown(f"- **Tipo:** {template['type']}")
+                            st.markdown(
+                                f"- **Agendamento:** {template['schedule_value']}"
+                            )
+                            st.markdown(
+                                f"- **Descrição:** {template['params'].get('message', 'N/A')}"
+                            )
+
+                            if st.button(
+                                f"Criar '{selected_template}'", type="primary"
+                            ):
+                                client_id = st.session_state.memory.get_active_client()
+
+                                job = st.session_state.scheduler.add_job(
+                                    job_id=f"{vertical}_{selected_template}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                                    job_type=template["type"],
+                                    schedule_type=template["schedule_type"],
+                                    schedule_value=template["schedule_value"],
+                                    params={
+                                        **template["params"],
+                                        "client_id": client_id,
+                                        "vertical": vertical,
+                                    },
+                                    enabled=True,
+                                )
+
+                                st.success(f"Automação criada: {job['id']}")
+                                st.rerun()
+
+                            # Setup especial para concessionárias
+                            if (
+                                vertical == "concessionarias"
+                                and selected_template == "offline_conversion_reminder"
+                            ):
+                                st.markdown("---")
+                                st.markdown("### 🔧 Configuração de Conversão Offline")
+
+                                with st.form("offline_conversion_setup"):
+                                    crm_type = st.selectbox(
+                                        "CRM/ERP",
+                                        [
+                                            "Salesforce",
+                                            "HubSpot",
+                                            "Pipedrive",
+                                            "Custom",
+                                        ],
+                                    )
+
+                                    upload_frequency = st.selectbox(
+                                        "Frequência de Upload",
+                                        ["daily", "hourly", "real_time"],
+                                    )
+
+                                    conversion_window = st.number_input(
+                                        "Janela de Conversão (dias)",
+                                        min_value=7,
+                                        max_value=90,
+                                        value=7,
+                                    )
+
+                                    if st.form_submit_button(
+                                        "Configurar Conversão Offline"
+                                    ):
+                                        crm_config = {
+                                            "type": crm_type,
+                                            "upload_frequency": upload_frequency,
+                                            "conversion_window": conversion_window,
+                                        }
+
+                                        job = st.session_state.scheduler.setup_concessionarias_offline(
+                                            client_id=client_id,
+                                            crm_config=crm_config,
+                                        )
+
+                                        st.success(
+                                            f"Conversão offline configurada: {job['id']}"
+                                        )
+                                        st.rerun()
+
+                    st.markdown("---")
+
+                # Form customizado
+                st.markdown("**Criar Automação Customizada:**")
+
                 with st.form("new_automation"):
                     job_name = st.text_input(
                         "Nome da Automação", placeholder="Ex: Pausar CPA Alto"

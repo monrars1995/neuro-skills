@@ -17,6 +17,161 @@ from pathlib import Path
 class AutomationScheduler:
     """Agendador de automações com suporte a crons."""
 
+    # Vertical-specific automation templates
+    VERTICAL_TEMPLATES = {
+        "concessionarias": {
+            "offline_conversion_reminder": {
+                "type": "rule",
+                "schedule_type": "daily",
+                "schedule_value": "09:00",
+                "params": {
+                    "type": "offline_conversion_check",
+                    "message": "Verificar upload de conversões offline do CRM",
+                    "min_window_days": 7,
+                },
+            },
+            "test_drive_optimization": {
+                "type": "optimization",
+                "schedule_type": "weekly",
+                "schedule_value": "monday 08:00",
+                "params": {
+                    "type": "pause_low_performers",
+                    "cpa_threshold": 300,
+                    "min_spend": 100,
+                    "action": "Pausar campanhas com CPA > R$300 (ciclo de venda longo)",
+                },
+            },
+            "follow_up_sequence": {
+                "type": "rule",
+                "schedule_type": "interval",
+                "schedule_value": "24h",
+                "params": {
+                    "type": "follow_up_leads",
+                    "conversion_window": 90,
+                    "message": "Configurar sequência de follow-up para leads não convertidos",
+                },
+            },
+        },
+        "imobiliarias": {
+            "product_catalog_sync": {
+                "type": "optimization",
+                "schedule_type": "daily",
+                "schedule_value": "06:00",
+                "params": {
+                    "type": "sync_product_catalog",
+                    "message": "Sincronizar catálogo de imóveis",
+                },
+            },
+            "tour_virtual_tracking": {
+                "type": "analysis",
+                "schedule_type": "weekly",
+                "schedule_value": "friday 17:00",
+                "params": {
+                    "report_type": "tour_virtual",
+                    "message": "Relatório de performance de tours virtuais",
+                },
+            },
+            "ltv_analysis": {
+                "type": "analysis",
+                "schedule_type": "monthly",
+                "schedule_value": "01 10:00",
+                "params": {
+                    "report_type": "ltv",
+                    "message": "Análise de LTV por cliente",
+                },
+            },
+        },
+        "ecommerce": {
+            "cart_abandonment": {
+                "type": "optimization",
+                "schedule_type": "interval",
+                "schedule_value": "6h",
+                "params": {
+                    "type": "cart_abandonment_campaign",
+                    "message": "Ativar campanha de carrinho abandonado",
+                },
+            },
+            "dpa_optimization": {
+                "type": "optimization",
+                "schedule_type": "daily",
+                "schedule_value": "07:00",
+                "params": {
+                    "type": "dpa_optimization",
+                    "message": "Otimizar Dynamic Product Ads",
+                },
+            },
+            "scale_fast_movers": {
+                "type": "optimization",
+                "schedule_type": "daily",
+                "schedule_value": "09:00",
+                "params": {
+                    "type": "scale_high_performers",
+                    "roas_threshold": 4.0,
+                    "scale_factor": 1.3,
+                    "message": "Escalar produtos com ROAS > 4x",
+                },
+            },
+        },
+        "educacao": {
+            "seasonal_campaigns": {
+                "type": "optimization",
+                "schedule_type": "weekly",
+                "schedule_value": "monday 08:00",
+                "params": {
+                    "type": "seasonal_adjustment",
+                    "message": "Ajustar campanhas para sazonalidade (volta às aulas, férias)",
+                },
+            },
+            "lead_scoring": {
+                "type": "analysis",
+                "schedule_type": "daily",
+                "schedule_value": "18:00",
+                "params": {
+                    "report_type": "lead_scoring",
+                    "message": "Análise de lead scoring e qualificação",
+                },
+            },
+            "crm_sync": {
+                "type": "optimization",
+                "schedule_type": "interval",
+                "schedule_value": "12h",
+                "params": {
+                    "type": "crm_sync",
+                    "message": "Sincronizar leads com CRM",
+                },
+            },
+        },
+        "saude": {
+            "privacy_compliance_check": {
+                "type": "rule",
+                "schedule_type": "weekly",
+                "schedule_value": "monday 09:00",
+                "params": {
+                    "type": "lgpd_compliance_check",
+                    "message": "Verificar conformidade LGPD/HIPAA",
+                },
+            },
+            "appointment_optimization": {
+                "type": "optimization",
+                "schedule_type": "daily",
+                "schedule_value": "08:00",
+                "params": {
+                    "type": "appointment_optimization",
+                    "message": "Otimizar campanhas de agendamento",
+                },
+            },
+            "patient_ltv_analysis": {
+                "type": "analysis",
+                "schedule_type": "monthly",
+                "schedule_value": "01 10:00",
+                "params": {
+                    "report_type": "patient_ltv",
+                    "message": "Análise de LTV por paciente",
+                },
+            },
+        },
+    }
+
     def __init__(self, memory_manager, api_client):
         self.memory = memory_manager
         self.api_client = api_client
@@ -105,6 +260,77 @@ class AutomationScheduler:
             if job["id"] == job_id:
                 return job
         return None
+
+    def get_vertical_templates(self, vertical: str) -> Dict[str, Dict]:
+        """Retorna templates de automação para uma vertical."""
+        return self.VERTICAL_TEMPLATES.get(vertical, {})
+
+    def create_vertical_automations(self, vertical: str, client_id: str) -> List[Dict]:
+        """
+        Cria automações padrão para uma vertical.
+
+        Args:
+            vertical: Tipo de vertical
+            client_id: ID do cliente
+
+        Returns:
+            Lista de jobs criados
+        """
+        templates = self.get_vertical_templates(vertical)
+        created_jobs = []
+
+        for template_name, template in templates.items():
+            job_id = f"{vertical}_{template_name}_{client_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+            params = template.get("params", {})
+            params["client_id"] = client_id
+            params["vertical"] = vertical
+
+            job = self.add_job(
+                job_id=job_id,
+                job_type=template["type"],
+                schedule_type=template["schedule_type"],
+                schedule_value=template["schedule_value"],
+                params=params,
+                enabled=True,
+            )
+
+            created_jobs.append(job)
+
+        return created_jobs
+
+    def setup_concessionarias_offline(self, client_id: str, crm_config: Dict) -> Dict:
+        """
+        Configura automação de conversão offline para concessionárias.
+
+        Args:
+            client_id: ID do cliente
+            crm_config: Configuração do CRM
+
+        Returns:
+            Job de automação criado
+        """
+        job_id = (
+            f"offline_conversion_{client_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        )
+
+        job = self.add_job(
+            job_id=job_id,
+            job_type="optimization",
+            schedule_type="daily",
+            schedule_value="08:00",
+            params={
+                "type": "offline_conversion_upload",
+                "client_id": client_id,
+                "vertical": "concessionarias",
+                "crm_config": crm_config,
+                "min_window_days": 7,
+                "message": "Upload automático de conversões offline do CRM",
+            },
+            enabled=True,
+        )
+
+        return job
 
     # ==================== SCHEDULING ====================
 

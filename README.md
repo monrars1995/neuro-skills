@@ -1,416 +1,340 @@
 # Neuro Skills
 
+> **O bastidor técnico que o mercado não mostra**  
 > Framework de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI
 
-**Site Oficial:** [goldneuron.io](https://goldneuron.io/)  
-**Comunidade:** [Drops](https://goldneuron.io/drops) - O bastidor técnico que o mercado não mostra  
-**Instagram:** [@monrars](https://instagram.com/monrars)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/badge/version-v2.2.0--beta-blue)](https://github.com/monrars1995/neuro-skills)
+[![Made in Brazil](https://img.shields.io/badge/Made%20in-Brazil-green)](https://goldneuron.io/)
+
+**🌐 Site Oficial:** [goldneuron.io](https://goldneuron.io/)  
+**📧 Newsletter:** [Drops](https://goldneuron.io/drops) - Estudos de caso semanais  
+**📸 Instagram:** [@monrars](https://instagram.com/@monrars)  
 
 ---
 
-## 🚀 Sobre
+## 🎯 Por Que Neuro Skills?
 
-Skills de automação de Meta Ads para criar, gerenciar e otimizar campanhas de tráfego pago com IA. Construído para donos de operação, heads e gestores que vivem o jogo real: processo, rastreabilidade, automação, decisão e execução.
+O mercado de tráfego pago tem um problema: **todo mundo mostra o resultado, ninguém mostra o processo.**
 
-### Comunidade Drops
+Cursos ensinam teoria. Ferramentas prometem automação mágica. Mas na hora de executar, você fica só com:
+- Briefings incompletos
+- Processos que não escalam
+- Atribuição quebrada
+- Decisões no escuro
 
-Uma comunidade construída para profissionais que querem:
-- **Processo** - Workflows e automações testados em operações reais
-- **Rastreabilidade** - Atribuição completa do funil
-- **Automação** - Cron jobs, sincronização offline, otimização automática
-- **Decisão** - Dados para tomar decisões baseadas em ROI/ROAS
-- **Execução** - Implementação rápida com skills prontos
+**Neuro Skills é diferente.**
 
-Newsletter semanal com estudos de caso, implementações e treinamentos.
+Construído por quem vive o jogo real. Cada skill, cada automação, cada workflow foi testado em operações reais de tráfego pago. Não é teoria. É implementação.
 
-Gratuito e aberto em [goldneuron.io/drops](https://goldneuron.io/drops).
+---
+
+## 🏗️ O Que Você Vai Encontrar
+
+### Para Donos de Operação
+- **Processo** → Workflows validados em operações de R$100k+/mês
+- **Rastreabilidade** → Atribuição completa do funil, do clique à venda
+- **Automação** → Cron jobs, sincronização offline, otimização automática
+
+### Para Heads e Gestores
+- **Decisão** → Dados para tomar decisões baseadas em ROI/ROAS real
+- **Execução** → Implementação rápida com skills prontos para usar
+- **Escala** → Templates que funcionam e podem ser replicados
+
+### Newsletter Drops
+Toda semana, estudos de caso reais:
+- **Implementações** → Como resolvemos problemas reais
+- **Treinamentos** → Técnicas que funcionam
+- **Bastidores** → O que o mercado não mostra
+
+**Assine gratuitamente:** [goldneuron.io/drops](https://goldneuron.io/drops)
 
 ---
 
 ## 📁 Agentes por Vertical
 
+Cada vertical tem características únicas. Criei agentes especializados que entendem:
+
 ### 🚗 Concessionárias
-- Ciclo de venda longo (7-90 dias)
-- Conversão offline obrigatória
-- Janela de atribuição: 90 dias
-- Integração CRM específica
-- [Ver SKILL.md](agents/concessionarias/SKILL.md) | [Ver TOOLS.md](agents/concessionarias/TOOLS.md)
+> **Ciclo de venda longo (7-90 dias)** | Conversão offline obrigatória
+
+- Janela de atribuição: 7-90 dias
+- Integração CRM (Salesforce, HubSpot, Pipedrive)
+- Conversão offline com hash SHA256
+- ROI com margem de financiamento
+- Targeting por tipo de veículo
+
+**[SKILL.md](agents/concessionarias/SKILL.md)** | **[TOOLS.md](agents/concessionarias/TOOLS.md)**
+
+---
 
 ### 🏠 Imobiliárias
-- Ticket médio alto (R$300k-2M)
+> **Ticket médio alto (R$300k-2M)** | LTV + comissão (3-6%)
+
 - Inventário único por localização
-- LTV + comissão (3-6%)
-- Tours virtuais
-- [Ver SKILL.md](agents/imobiliarias/SKILL.md)
+- Tours virtuais como conversão
+- Product Catalog para imóveis
+- Remarketing de propriedades visualizadas
+- LTV por cliente
+
+**[SKILL.md](agents/imobiliarias/SKILL.md)** | **[TOOLS.md](agents/imobiliarias/TOOLS.md)**
+
+---
 
 ### 🛒 E-commerce
-- Ciclo curto (1-7 dias)
-- DPA (Dynamic Product Ads)
-- Catálogo de produtos
-- Eventos em tempo real
-- [Ver SKILL.md](agents/ecommerce/SKILL.md)
+> **Ciclo curto (1-7 dias)** | DPA + Catálogo
+
+- Dynamic Product Ads essencial
+- Cart abandonment campaigns
+- Real-time events (AddToCart, Purchase)
+- Scale fast movers automaticamente
+- ROI = (Margem - CPA) / CPA
+
+**[SKILL.md](agents/ecommerce/SKILL.md)** | **[TOOLS.md](agents/ecommerce/TOOLS.md)**
+
+---
 
 ### 🎓 Educação
-- Sazonalidade forte (vestibular, volta às aulas)
-- LTV alto (48 meses × mensalidade)
+> **Sazonalidade forte** | LTV alto (48 meses × mensalidade)
+
+- Vestibular, volta às aulas, férias
+- Lead scoring + CRM
 - Modelo de assinatura
-- Matrícula offline
-- [Ver SKILL.md](agents/educacao/SKILL.md)
+- Matrícula online/offline
+- ROI por aluno
+
+**[SKILL.md](agents/educacao/SKILL.md)** | **[TOOLS.md](agents/educacao/TOOLS.md)**
+
+---
 
 ### 🏥 Saúde
-- Compliance LGPD/HIPAA
+> **Compliance LGPD/HIPAA** | Privacidade primeiro
+
 - Targeting privacy-safe
-- LTV + indicação (boca a boca)
-- Auditoria mensal
-- [Ver SKILL.md](agents/saude/SKILL.md)
+- Consultas e agendamentos como conversão
+- LTV + indicação (boca a boca forte)
+- Auditoria mensal obrigatória
+- Não pode interesses sensíveis
+
+**[SKILL.md](agents/saude/SKILL.md)** | **[TOOLS.md](agents/saude/TOOLS.md)**
 
 ---
 
-## 🎯 Skills Principais
+## 🧠 Skills Principais
 
-### 🧠 neuro-ads-manager
-Gerenciador completo de Meta Ads com CRUD, Analytics, Automação e integração API v21.0. Plataforma unificada para gerenciar campanhas de ponta a ponta.
-
-**Funcionalidades:**
-- **CRUD Completo**: Criar, listar, editar e deletar campanhas, ad sets, ads e creatives
-- **Analytics/Relatórios**: Métricas detalhadas, dashboards, análise de performance
-- **Automação/Otimização**: Regras automáticas, escala, pausa por performance
-- **Integração API**: Cliente completo para Meta Graph API v21.0
-- Sistema de memória com armazenamento persistente
-- Rate limiting e tratamento de erros
-- Cache para insights
-
-### 🎯 meta-ads-manager
-Gerenciador completo de tráfego Meta Ads com integração Graph API v21.0. Gerencia contas, cria campanhas, testes A/B, escala, diagnósticos e relatórios.
-
-**Funcionalidades:**
-- Sistema de memória com armazenamento persistente de contas
-- Criação de campanhas a partir de briefing e criativos
-- Framework de testes A/B
-- Playbook de escala (horizontal/vertical)
-- Diagnósticos de performance
-- Benchmarks do mercado
-- Regras de automação
-- Modelos de relatórios
-
-### 📋 traffic-strategist
-Agente de preparação de campanhas que analisa pastas, valida briefings, verifica criativos, identifica lacunas e organiza arquivos antes da criação da campanha.
-
-**Funcionalidades:**
-- Análise de pastas
-- Validação de briefing
-- Verificação de criativos
-- Identificação de lacunas
-- Geração de perguntas para assets faltando
-- Organização de arquivos
-- Geração de documentação (`analise.md`, `checklist.md`)
-
-### ✍️ ad-copywriter
-Especialista em copy de anúncios que analisa a voz da marca, mantém consistência de tom, cria copy on-brand para formatos Feed/Stories/Reels/Carousel e gera variações para testes A/B.
-
-**Funcionalidades:**
-- Análise de voz da marca
-- Consistência de tom
-- Copy para todos os formatos Meta
-- Variações para testes A/B
-- Otimização específica por plataforma
-
-## Fluxo de Trabalho
+### neuro-ads-manager
+> **Gerenciador completo com CRUD, Analytics e Automação**
 
 ```
-traffic-strategist → ad-copywriter → [neuro-ads-manager / meta-ads-manager]
-     (prep)              (copy)              (executa)
+CRUD Completo            → Criar, listar, editar, deletar
+Analytics/Relatórios     → Métricas, dashboards, performance
+Automação/Otimização     → Regras automáticas, escala, pausa
+Integração API v21.0     → Cliente completo Meta Graph API
 ```
 
-1. **traffic-strategist**: Analisa pasta da campanha, valida assets, identifica lacunas
-2. **ad-copywriter**: Gera variações de copy baseado no briefing e voz da marca
-3. **neuro-ads-manager/meta-ads-manager**: Cria campanhas, lança anúncios, gerencia orçamentos
+### meta-ads-manager
+> **Gerenciador de tráfego com briefing e criativos**
 
----
-
-## Comandos Completos
-
-### 📋 Traffic Strategist
-
-| Comando | Descrição |
-|---------|-----------|
-| `analise {cliente}` | Analisa pasta do cliente |
-| `analise {cliente} {campanha}` | Analisa campanha específica |
-| `prepara {cliente}` | Prepara tudo para criação de campanha |
-| `check {cliente}` | Executa validação de checklist |
-| `organiza {cliente}` | Organiza e renomeia arquivos |
-| `gera docs {cliente}` | Gera toda documentação |
-
-**Exemplos:**
 ```
-> Analise o briefing em /campanhas/nike/2024-03/spring-sale/
-> Prepare a campanha para o cliente Nike
-> Verifique os criativos em /campanhas/nike/2024-03/black_friday/
-> Gere documentação para o cliente fitness_app
+Memória Persistente     → Contas salvas, histórico
+Criação de Campanhas     → Briefing + criativos
+Testes A/B              → Framework completo
+Playbook de Escala      → Horizontal + vertical
+Diagnostics             → Performance + benchmarks
 ```
 
-### ✍️ Ad Copywriter
+### traffic-strategist
+> **Preparação de campanhas (use ANTES de criar)**
 
-| Comando | Descrição |
-|---------|-----------|
-| `analisa voz {cliente}` | Analisa voz da marca a partir do briefing |
-| `cria copy {cliente}` | Gera copy de anúncio com voz da marca |
-| `variantes {cliente}` | Cria variações para teste A/B |
-| `ajusta tom {cliente}` | Ajusta tom baseado em feedback |
-| `exporta copy {cliente}` | Exporta copy para markdown |
-
-**Exemplos:**
 ```
-> Analise a voz da marca Nike
-> Crie copy para a campanha Nike Spring Sale
-> Gere variações para teste A/B
-> Ajuste o tom para mais casual
+Analisa pastas          → Verifica briefing e assets
+Valida briefings        → Identifica lacunas
+Organiza arquivos       → Renomeia, estrutura
+Gera documentação       → analise.md, checklist.md
 ```
 
-### 🎯 Meta Ads Manager
+### ad-copywriter
+> **Copy on-brand para todos os formatos**
 
-#### Gerenciamento de Contas
-
-| Comando | Descrição |
-|---------|-----------|
-| `/meta-ads setup` | Inicializa skill, salva credenciais da conta |
-| `/meta-ads accounts list` | Lista todas as contas salvas |
-| `/meta-ads accounts add {nome}` | Adiciona nova conta |
-| `/meta-ads accounts use {nome}` | Define conta ativa |
-| `/meta-ads accounts remove {nome}` | Remove conta |
-| `/meta-ads accounts export` | Exporta configurações para backup |
-| `/meta-ads accounts import` | Importa configurações de backup |
-
-#### Gerenciamento de Campanhas
-
-| Comando | Descrição |
-|---------|-----------|
-| `/meta-ads campaign create` | Cria nova campanha lendo pasta |
-| `/meta-ads analyze {período}` | Analisa desempenho |
-| `/meta-ads diagnose` | Executa diagnósticos nas campanhas ativas |
-| `/meta-ads scale {id}` | Escala campanha com segurança |
-| `/meta-ads pause {id}` | Pausa campanha |
-| `/meta-ads resume {id}` | Retoma campanha |
-| `/meta-ads status` | Mostra status atual |
-
-#### Comandos de Pastas
-
-| Comando | Descrição |
-|---------|-----------|
-| `/meta-ads clients` | Lista todos os clientes |
-| `/meta-ads campaigns {cliente}` | Lista campanhas do cliente |
-| `/meta-ads folder create {cliente} {nome}` | Cria pasta de campanha |
-| `/meta-ads briefing {cliente} {campanha}` | Lê briefing |
-
-#### Períodos de Análise
-
-| Período | Descrição |
-|---------|-----------|
-| `today` | Dados de hoje |
-| `yesterday` | Dados de ontem |
-| `last7d` | Últimos 7 dias |
-| `last14d` | Últimos 14 dias |
-| `last30d` | Últimos 30 dias |
-| `last90d` | Últimos 90 dias |
-| `this_month` | Mês atual |
-| `last_month` | Mês anterior |
-
-**Exemplos:**
 ```
-> /meta-ads setup
-> Liste minhas contas de anúncios salvas
-> Crie campanha a partir de /campanhas/nike/2024-03/spring-sale/
-> Analise a performance da campanha última semana
-> Escale a campanha com CPA abaixo de $15
-> Diagnóstico das campanhas ativas
+Análise de voz          → Extrai tom da marca
+Variações A/B           → Testa títulos, textos, CTAs
+Formatos Meta           → Feed, Stories, Reels, Carousel
+Otimização              → Específico por plataforma
 ```
 
 ---
 
-## Instalação
+## 🔄 Fluxo de Trabalho
+
+```
+┌─────────────────────┐     ┌─────────────────┐     ┌────────────────────┐
+│  traffic-strategist │ ──► │  ad-copywriter  │ ──► │  neuro-ads-manager │
+│      (prepara)      │     │     (copy)      │     │     (executa)      │
+└─────────────────────┘     └─────────────────┘     └────────────────────┘
+         │                           │                        │
+    analise.md                 copy_variants.md         campaign criada
+    checklist.md               brand_voice.json         ads lançados
+    arquivos organizados       targeting.json           otimização ativa
+```
+
+**1. Prepara** → Traffic Strategist valida briefing e assets  
+**2. Copy** → Ad Copywriter gera variações on-brand  
+**3. Executa** → Neuro/Meta Ads Manager cria e lança campanhas  
+
+---
+
+## 🚀 Instalação Rápida
 
 ### Claude Code (Anthropic)
 
 ```bash
-# Clone o repositório
 git clone https://github.com/monrars1995/neuro-skills.git
-
-# Copie os skills para o diretório do Claude Code
 cp -r neuro-skills/meta-ads-manager ~/.claude/skills/
 cp -r neuro-skills/traffic-strategist ~/.claude/skills/
 cp -r neuro-skills/ad-copywriter ~/.claude/skills/
+cp -r neuro-skills/neuro-ads-manager ~/.claude/skills/
+cp -r neuro-skills/agents ~/.claude/skills/
 ```
 
 ### OpenAI Codex
 
 ```bash
-# Clone o repositório
 git clone https://github.com/monrars1995/neuro-skills.git
-
-# Copie os skills para o diretório do Codex
 cp -r neuro-skills/meta-ads-manager ~/.codex/skills/
 cp -r neuro-skills/traffic-strategist ~/.codex/skills/
 cp -r neuro-skills/ad-copywriter ~/.codex/skills/
 ```
 
-### Gemini CLI (Google)
+### Gemini CLI / OpenCode
 
 ```bash
-# Clone o repositório
 git clone https://github.com/monrars1995/neuro-skills.git
-
-# Copie os skills para o diretório do Gemini CLI
-cp -r neuro-skills/meta-ads-manager ~/.gemini/skills/
-cp -r neuro-skills/traffic-strategist ~/.gemini/skills/
-cp -r neuro-skills/ad-copywriter ~/.gemini/skills/
-```
-
-### OpenCode
-
-```bash
-# Clone o repositório
-git clone https://github.com/monrars1995/neuro-skills.git
-
-# Copie os skills para o diretório do OpenCode
-cp -r neuro-skills/meta-ads-manager ~/.opencode/skills/
-cp -r neuro-skills/traffic-strategist ~/.opencode/skills/
-cp -r neuro-skills/ad-copywriter ~/.opencode/skills/
+# Gemini
+cp -r neuro-skills/* ~/.gemini/skills/
+# OpenCode
+cp -r neuro-skills/* ~/.opencode/skills/
 ```
 
 ---
 
-## Estrutura de Diretórios
+## 📋 Comandos Principais
+
+### Traffic Strategist
+
+| Comando | Ação |
+|--------|------|
+| `analise {cliente}` | Analisa pasta do cliente |
+| `prepara {cliente}` | Prepara para criação de campanha |
+| `check {cliente}` | Valida checklist |
+| `organiza {cliente}` | Organiza arquivos |
+
+### Ad Copywriter
+
+| Comando | Ação |
+|--------|------|
+| `analisa voz {cliente}` | Extrai voz da marca |
+| `cria copy {cliente}` | Gera copy on-brand |
+| `variantes {cliente}` | Variações para A/B |
+| `ajusta tom {cliente}` | Ajusta baseado em feedback |
+
+### Meta Ads Manager
+
+| Comando | Ação |
+|--------|------|
+| `/meta-ads setup` | Configura conta |
+| `/meta-ads campaign create` | Cria campanha |
+| `/meta-ads analyze last7d` | Analisa performance |
+| `/meta-ads scale {id}` | Escala campanha |
+| `/meta-ads diagnose` | Diagnósticos |
+
+---
+
+## 📁 Estrutura de Diretórios
 
 ```
 /campanhas/{cliente}/{YYYY-MM}/{campanha}/
-├── briefing.md          # Briefing da campanha (obrigatório)
+├── briefing.md          # Briefing (obrigatório)
 ├── analise.md           # Gerado pelo traffic-strategist
-├── checklist.md        # Gerado pelo traffic-strategist
+├── checklist.md         # Gerado pelo traffic-strategist
 ├── copy_variants.md    # Gerado pelo ad-copywriter
 ├── targeting.json      # Gerado pelo ad-copywriter
-├── brand_voice.json    # Gerado pelo ad-copywriter
-└── ad_*.*              # Assets de criativos
+├── brand_voice.json    # Voz da marca
+└── ad_*.{jpg,mp4}      # Criativos
 ```
 
-### Convenção de Nomes para Criativos
-
+**Convenção de nomes:**
 ```
-Formato: ad_{número}_{posicionamento}_{tipo}.{extensão}
-
-Exemplos:
-ad_01_feed_image.jpg      # Criativo 1, Feed, Imagem
-ad_01_feed_video.mp4      # Criativo 1, Feed, Vídeo
-ad_02_story_video.mp4     # Criativo 2, Stories, Vídeo
-ad_02_reels_video.mp4     # Criativo 2, Reels, Vídeo
-ad_03_carousel_01.jpg     # Criativo 3, Card 1 do Carrossel
+ad_{número}_{posicionamento}_{tipo}.{ext}
+ad_01_feed_image.jpg
+ad_02_story_video.mp4
+ad_03_reels_video.mp4
 ```
 
 ---
 
-## Sistema de Memória
-
-```
-~/.meta-ads-manager/
-├── accounts.json       # Contas de anúncios salvas
-├── session.json        # Dados da sessão atual
-├── cache/              # Cache de insights
-└── logs/               # Histórico de ações
-```
-
----
-
-## Requisitos
-
-- Conta Meta Business
-- Facebook App com Graph API v21.0
-- Token de acesso válido com permissão `ads_management`
-- Pixel do Facebook configurado (recomendado)
-- Página do Facebook conectada (recomendado)
-
----
-
-## Primeiro Uso
-
-### 1. Setup Inicial
+## ⚡ Quick Start
 
 ```bash
-# Crie os diretórios de memória
-mkdir -p ~/.meta-ads-manager/cache/insights
-mkdir -p ~/.meta-ads-manager/cache/campaigns
-mkdir -p ~/.meta-ads-manager/logs
+# 1. Clone e configure
+git clone -b beta https://github.com/monrars1995/neuro-skills.git
+cp -r neuro-skills/* ~/.claude/skills/
 
-# Inicialize o arquivo de contas
-echo '{"version":"1.0","accounts":{},"active_account":null}' > ~/.meta-ads-manager/accounts.json
-```
+# 2. Configure sua conta Meta
+> /meta-ads setup
 
-### 2. Configure Sua Conta
-
-```
-Execute: /meta-ads setup
-
-Você precisará de:
-- Access Token: https://developers.facebook.com/tools/explorer/
-  - Permissões: ads_management, ads_read, pages_read_engagement
-- Ad Account ID: https://business.facebook.com/settings/ad-accounts
-  - Formato: act_123456789 ou 123456789
-- Pixel ID (opcional): https://business.facebook.com/settings/pixels
-- Page ID (opcional): https://business.facebook.com/settings/pages
-```
-
-### 3. Crie Sua Primeira Campanha
-
-```bash
-# Crie a estrutura de pastas
+# 3. Crie sua primeira campanha
 mkdir -p /campanhas/nike/2024-03/black_friday/
+# Adicione briefing.md e criativos
 
-# Adicione o briefing
-cp briefing.md /campanhas/nike/2024-03/black_friday/
-
-# Adicione os criativos
-cp ad_01_feed_image.jpg /campanhas/nike/2024-03/black_friday/
-cp ad_01_feed_video.mp4 /campanhas/nike/2024-03/black_friday/
-
-# Execute o skill
-> Crie uma campanha para Nike Black Friday
-```
-
----
-
-## Workflow Recomendado
-
-### 1. Preparação (traffic-strategist)
-
-```
+# 4. Execute o fluxo
 > Analise /campanhas/nike/2024-03/black_friday/
 > Prepare a campanha para Nike
-> Gere documentação para Nike
-```
-
-Isso cria:
-- `analise.md` - Análise completa
-- `checklist.md` - Checklist de validação
-- Organiza os arquivos de criativos
-
-### 2. Copy (ad-copywriter)
-
-```
-> Analise a voz da marca Nike
 > Crie copy para Nike Black Friday
-> Gere variações para teste A/B
+> Crie campanha a partir de /campanhas/nike/2024-03/black_friday/
 ```
 
-Isso cria:
-- `brand_voice.json` - Voz da marca
-- `copy_variants.md` - Variações de copy
-- `targeting.json` - Configurações de targeting
+---
 
-### 3. Execução (meta-ads-manager)
+## 📊 Benchmarks por Vertical
 
-```
-> /meta-ads setup
-> /meta-ads campaign create
-> Campanha criada a partir de /campanhas/nike/2024-03/black_friday/
-```
+| Vertical | CPA Bom | CPA Atenção | ROAS Bom | ROAS Atenção | CTR Bom |
+|----------|---------|-------------|----------|--------------|---------|
+| Concessionárias | < R$150 | > R$300 | > 2.5x | < 1.5x | > 1.5% |
+| Imobiliárias | < R$80 | > R$200 | > 3.0x | < 1.5x | > 1.2% |
+| E-commerce | < R$25 | > R$50 | > 4.0x | < 2.0x | > 2.0% |
+| Educação | < R$50 | > R$150 | > 3.5x | < 1.8x | > 1.5% |
+| Saúde | < R$40 | > R$100 | > 3.0x | < 1.5x | > 1.8% |
+
+---
+
+## 🤖 Automação por Vertical
+
+### Concessionárias
+- ✅ Conversão offline (CRM → Meta)
+- ✅ Janela de atribuição: 7-90 dias
+- ✅ Test drive como conversão intermediária
+- ✅ Follow-up leads não convertidos
+
+### Imobiliárias
+- ✅ Product Catalog sync
+- ✅ Tour virtual tracking
+- ✅ LTV analysis mensal
+
+### E-commerce
+- ✅ Cart abandonment automation
+- ✅ DPA optimization
+- ✅ Scale fast movers
+
+### Educação
+- ✅ Seasonal campaigns (vestibular, volta às aulas)
+- ✅ Lead scoring + CRM
+- ✅ ROAS por aluno
+
+### Saúde
+- ✅ LGPD compliance check
+- ✅ Privacy-safe targeting
+- ✅ Appointment optimization
 
 ---
 
@@ -418,52 +342,41 @@ Isso cria:
 
 **Monrars** - Criador e Mantenedor
 
-- 🌐 **Site:** [goldneuron.io](https://goldneuron.io/)
-- 📸 **Instagram:** [@monrars](https://instagram.com/monrars)
-- 💻 **GitHub:** [@monrars1995](https://github.com/monrars1995)
-- 🚀 **Comunidade:** [Drops](https://goldneuron.io/drops)
+| | |
+|---|---|
+| **Site** | [goldneuron.io](https://goldneuron.io/) |
+| **Newsletter** | [Drops](https://goldneuron.io/drops) |
+| **Instagram** | [@monrars](https://instagram.com/@monrars) |
+| **GitHub** | [@monrars1995](https://github.com/monrars1995) |
 
 ---
 
 ## 📜 Licença
 
-MIT License with Attribution - Veja o arquivo [LICENSE](LICENSE) para detalhes.
+MIT License with Attribution
 
 Ao usar este projeto, você concorda em:
-- Manter atribuição ao autor original (Monrars)
-- Incluir link para o repositório original
-- Não rebrandear ou revender como produto standalone
+- ✅ Manter atribuição ao autor original
+- ✅ Incluir link para o repositório original
+- ❌ Não rebrandear ou revender como produto standalone
 
-Uso comercial é permitido sob os termos da licença.
-
-Para licenças empresariais ou suporte, entre em contato.
+Uso comercial permitido sob os termos da licença.  
+Para licenças empresariais ou suporte, [entre em contato](https://goldneuron.io/).
 
 ---
 
-## 📊 Versões
+## 📈 Versões
 
-| Versão | Branch | Status | Descrição |
-|--------|--------|--------|-----------|
-| `v1.0.0` | `main` | Produção | Versão estável inicial |
-| `v2.0.0-beta` | `beta` | Beta | Sistema de memória + agentes verticais |
-| `v2.2.0-beta` | `beta` | Atual | 5 agentes verticais especializados |
+| Versão | Branch | Descrição |
+|--------|--------|-----------|
+| `v1.0.0` | `main` | Versão estável inicial |
+| `v2.0.0-beta` | `beta` | Sistema de memória + agentes verticais |
+| `v2.2.0-beta` | `beta` | 5 agentes vertical especializados |
 
-Para usar a versão beta:
 ```bash
+# Use a versão beta
 git clone -b beta https://github.com/monrars1995/neuro-skills.git
 ```
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Por favor:
-
-1. Fork o projeto
-2. Crie sua branch (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Add: NovaFeature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abra um Pull Request
 
 ---
 
@@ -471,12 +384,20 @@ Contribuições são bem-vindas! Por favor:
 
 Construído com ❤️ para a comunidade de tráfego pago brasileira.
 
+Especialmente para quem:
+- Gasta horas em briefings que nunca vêm completo
+- Perde noites em atribuição quebrada
+- Decide no escuro porque dados não batem
+- Precisa escalar mas não sabe como
+
+**Este projeto é para você.**
+
 ---
 
 <div align="center">
 
-**[⬆ Voltar ao Topo](#neuro-skills)**
+**[Newsletter Drops](https://goldneuron.io/drops)** | **[Documentação](https://goldneuron.io/)** | **[Instagram](https://instagram.com/@monrars)**
 
-**Feito por [@monrars](https://instagram.com/monrars) | [goldneuron.io](https://goldneuron.io/)**
+**Feito por [@monrars](https://instagram.com/@monrars)**
 
 </div>

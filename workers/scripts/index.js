@@ -135,10 +135,76 @@ function getIndexPage() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neuro Skills // Installation Scripts</title>
+  
+  <!-- Primary Meta Tags -->
+  <title>Neuro Skills // Installation Scripts - Meta Ads Automation</title>
+  <meta name="title" content="Neuro Skills // Installation Scripts - Meta Ads Automation">
+  <meta name="description" content="Framework de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI. Instale rapidamente em qualquer plataforma com um comando.">
+  <meta name="keywords" content="meta ads, facebook ads, instagram ads, automação, tráfego pago, claude code, opencode, cursor, gemini cli, openai codex, AI agents, marketing automation">
+  <meta name="author" content="@monrars">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="Portuguese">
+  <meta name="revisit-after" content="7 days">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://scripts.goldneuron.io/">
+  <meta property="og:title" content="Neuro Skills // Installation Scripts - Meta Ads Automation">
+  <meta property="og:description" content="Framework de automação de Meta Ads para AI Agents. Instale rapidamente em qualquer plataforma com um comando.">
+  <meta property="og:image" content="https://goldneuron.io/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Neuro Skills">
+  <meta property="og:locale" content="pt_BR">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://scripts.goldneuron.io/">
+  <meta property="twitter:title" content="Neuro Skills // Installation Scripts - Meta Ads Automation">
+  <meta property="twitter:description" content="Framework de automação de Meta Ads para AI Agents. Instale rapidamente em qualquer plataforma com um comando.">
+  <meta property="twitter:image" content="https://goldneuron.io/og-image.png">
+  <meta property="twitter:creator" content="@monrars">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="https://goldneuron.io/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://goldneuron.io/apple-touch-icon.png">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://scripts.goldneuron.io/">
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Neuro Skills",
+    "description": "Framework de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI",
+    "url": "https://scripts.goldneuron.io/",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS, Linux, Windows",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Monrars",
+      "url": "https://instagram.com/monrars"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Gold Neuron",
+      "url": "https://goldneuron.io/"
+    }
+  }
+  </script>
+  
   <style>
     :root {
       --bg-primary: #0a0a0f;

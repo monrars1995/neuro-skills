@@ -231,6 +231,28 @@ Formatos Meta           → Feed, Stories, Reels, Carousel
 Otimização              → Específico por plataforma
 ```
 
+### viral-content-creator (🆕)
+> **Criação de conteúdo viral baseada em análise de perfis**
+
+```
+Análise de Perfis       → Extrai padrões de sucesso
+Análise de Posts        → Identifica fatores de viralização
+Análise Visual          → Detecta padrões visuais que funcionam
+Modelagem de Estilo     → Cria DNA de viralização reutilizável
+Geração de Conteúdo     → Produz conteúdo baseado em modelos
+```
+
+**Comandos:**
+```bash
+cv-analyze @username instagram    # Analisa perfil
+cv-post [url]                     # Analisa post específico
+cv-model concessionaria_viral     # Cria modelo de estilo
+cv-generate concessionaria_viral "financiamento"  # Gera conteúdo
+cv-dashboard                      # Ver estatísticas
+```
+
+**[SKILL.md](viral-content-creator/SKILL.md)** |**[TOOLS.md](viral-content-creator/TOOLS.md)**
+
 ---
 
 ## 🔄 Fluxo de Trabalho

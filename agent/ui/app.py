@@ -7,6 +7,9 @@ Agent completo que integra:
 - traffic-strategist: Análise e preparação
 - ad-copywriter: Geração de copy
 - meta-ads-manager: Criação e gestão de campanhas
+- neuro-ads-manager: CRUD, Analytics, Automação
+- scheduler: Agendamento de automações
+- analytics: Motor de análise
 """
 
 import streamlit as st
@@ -14,7 +17,7 @@ from pathlib import Path
 import sys
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 
 # Adicionar diretório pai ao path
@@ -24,6 +27,8 @@ from core.config import Config, NEURO_DIR
 from core.memory import MemoryManager
 from core.meta_api import MetaAPIClient
 from upload.video_uploader import BatchUploader, VideoUploadManager
+from scheduler.automation import AutomationScheduler
+from analytics.engine import AnalyticsEngine
 
 # Configuração da página
 st.set_page_config(
@@ -120,6 +125,15 @@ if "workflow_state" not in st.session_state:
 
 if "uploads" not in st.session_state:
     st.session_state.uploads = {"pending": [], "completed": [], "failed": []}
+
+if "scheduler" not in st.session_state:
+    st.session_state.scheduler = None
+
+if "analytics" not in st.session_state:
+    st.session_state.analytics = None
+
+if "automation_jobs" not in st.session_state:
+    st.session_state.automation_jobs = []
 
 # ==================== FUNÇÕES DO AGENT ====================
 
@@ -455,6 +469,15 @@ with st.sidebar:
         st.session_state.workflow_state["step"] = "upload"
     if st.button("📝 Novo Briefing", use_container_width=True):
         st.session_state.workflow_state["step"] = "briefing"
+
+    st.markdown("---")
+    st.markdown("**Automação:**")
+    if st.button("📊 Dashboard", use_container_width=True):
+        st.session_state.workflow_state["step"] = "dashboard"
+    if st.button("⚡ Automações", use_container_width=True):
+        st.session_state.workflow_state["step"] = "automations"
+    if st.button("📈 Analytics", use_container_width=True):
+        st.session_state.workflow_state["step"] = "analytics"
 
     st.markdown("---")
     st.markdown("📱 [@monrars](https://instagram.com/monrars)")
@@ -1322,6 +1345,506 @@ elif current_step == "config":
                 st.info("Funcionalidade em desenvolvimento")
 
         if st.button("← Voltar ao Início"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
+
+# ETAPA: DASHBOARD
+elif current_step == "dashboard":
+    with chat_container:
+        st.markdown("### 📊 Dashboard de Performance")
+
+        # Verificar se tem conta ativa
+        if not active_account:
+            st.warning("⚠️ Configure uma conta Meta Ads primeiro.")
+            if st.button("⚙️ Configurar Conta"):
+                st.session_state.workflow_state["step"] = "config_account"
+                st.rerun()
+        else:
+            # Criar API client se não existir
+            if st.session_state.api_client is None:
+                st.session_state.api_client = MetaAPIClient(
+                    access_token=active_account["access_token"],
+                    ad_account_id=active_account["ad_account_id"],
+                )
+
+            # Criar analytics engine se não existir
+            if st.session_state.analytics is None:
+                st.session_state.analytics = AnalyticsEngine(
+                    api_client=st.session_state.api_client,
+                    memory_manager=st.session_state.memory,
+                )
+
+            # Filtros
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                date_range = st.selectbox(
+                    "Período",
+                    ["today", "last_7d", "last_14d", "last_30d", "lifetime"],
+                    index=1,
+                )
+
+            with col2:
+                breakdown = st.selectbox(
+                    "Agrupamento", ["account", "campaign", "adset", "ad"], index=1
+                )
+
+            with col3:
+                if st.button("🔄 Atualizar", type="primary"):
+                    st.rerun()
+
+            st.markdown("---")
+
+            # Análise
+            with st.spinner("Carregando dados..."):
+                try:
+                    analysis = st.session_state.analytics.analyze_account(
+                        date_range=date_range, breakdown=breakdown
+                    )
+
+                    # Métricas principais
+                    st.markdown("### 📈 Métricas Gerais")
+                    metrics = analysis.get("metrics", {})
+
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    with col1:
+                        st.metric("Gasto", f"R${metrics.get('spend', 0):.2f}")
+
+                    with col2:
+                        st.metric("Impressões", f"{metrics.get('impressions', 0):,}")
+
+                    with col3:
+                        st.metric("Cliques", f"{metrics.get('clicks', 0):,}")
+
+                    with col4:
+                        ctr = metrics.get("ctr", 0)
+                        st.metric("CTR", f"{ctr:.2f}%")
+
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    with col1:
+                        cpm = metrics.get("cpm", 0)
+                        st.metric("CPM", f"R${cpm:.2f}")
+
+                    with col2:
+                        cpc = metrics.get("cpc", 0)
+                        st.metric("CPC", f"R${cpc:.2f}")
+
+                    with col3:
+                        cpa = (
+                            analysis.get("account_insights", {})
+                            .get("cost_per_action_type", {})
+                            .get("purchase", 0)
+                        )
+                        st.metric("CPA", f"R${cpa:.2f}")
+
+                    with col4:
+                        roas = metrics.get("roas", 0)
+                        st.metric("ROAS", f"{roas:.2f}x")
+
+                    st.markdown("---")
+
+                    # Alertas
+                    alerts = analysis.get("alerts", [])
+                    if alerts:
+                        st.markdown("### ⚠️ Alertas")
+                        for alert in alerts:
+                            if alert.get("level") == "critical":
+                                st.error(f"🚨 {alert.get('message')}")
+                            elif alert.get("level") == "warning":
+                                st.warning(f"⚠️ {alert.get('message')}")
+                            else:
+                                st.info(f"ℹ️ {alert.get('message')}")
+
+                        st.markdown("---")
+
+                    # Recomendações
+                    recommendations = analysis.get("recommendations", [])
+                    if recommendations:
+                        st.markdown("### 💡 Recomendações")
+                        for rec in recommendations[:3]:
+                            priority = rec.get("priority", "medium")
+                            if priority == "high":
+                                st.markdown(f"🔴 **{rec.get('message')}**")
+                            elif priority == "medium":
+                                st.markdown(f"🟡 {rec.get('message')}")
+                            else:
+                                st.markdown(f"🟢 {rec.get('message')}")
+
+                        st.markdown("---")
+
+                    # Campanhas
+                    if breakdown == "campaign":
+                        campaigns = analysis.get("breakdown_insights", {}).get(
+                            "data", []
+                        )
+                        if campaigns:
+                            st.markdown("### 🎯 Campanhas")
+
+                            for campaign in campaigns[:10]:
+                                with st.expander(f"**{campaign.get('name', 'N/A')}**"):
+                                    col1, col2, col3 = st.columns(3)
+                                    col1.metric(
+                                        "Gasto",
+                                        f"R${float(campaign.get('spend', 0)):.2f}",
+                                    )
+                                    col2.metric(
+                                        "CPA", f"R${campaign.get('cpa', 0):.2f}"
+                                    )
+                                    col3.metric("CTR", f"{campaign.get('ctr', 0):.2f}%")
+
+                except Exception as e:
+                    st.error(f"Erro ao carregar dados: {str(e)}")
+
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
+
+# ETAPA: AUTOMATIONS
+elif current_step == "automations":
+    with chat_container:
+        st.markdown("### ⚡ Automações")
+
+        if not active_account:
+            st.warning("⚠️ Configure uma conta Meta Ads primeiro.")
+            if st.button("⚙️ Configurar Conta"):
+                st.session_state.workflow_state["step"] = "config_account"
+                st.rerun()
+        else:
+            # Criar scheduler se não existir
+            if st.session_state.scheduler is None:
+                st.session_state.scheduler = AutomationScheduler(
+                    memory_manager=st.session_state.memory,
+                    api_client=st.session_state.api_client,
+                )
+
+            # Tabs
+            tab1, tab2, tab3 = st.tabs(
+                ["📋 Jobs Ativos", "➕ Nova Automação", "📊 Histórico"]
+            )
+
+            with tab1:
+                st.subheader("Jobs Agendados")
+
+                jobs = st.session_state.scheduler.get_jobs()
+
+                if jobs:
+                    for job in jobs:
+                        with st.expander(
+                            f"**{job.get('name', job['id'])}** - {job.get('type')}"
+                        ):
+                            col1, col2 = st.columns(2)
+
+                            with col1:
+                                st.markdown(f"**Tipo:** {job.get('type')}")
+                                st.markdown(
+                                    f"**Agendamento:** {job.get('schedule_type')} - {job.get('schedule_value')}"
+                                )
+                                st.markdown(
+                                    f"**Status:** {'✅ Ativo' if job.get('enabled') else '⏸️ Pausado'}"
+                                )
+
+                            with col2:
+                                st.markdown(
+                                    f"**Última execução:** {job.get('last_run', 'Nunca')}"
+                                )
+                                st.markdown(f"**Execuções:** {job.get('run_count', 0)}")
+
+                            col1, col2, col3 = st.columns(3)
+
+                            with col1:
+                                if st.button("▶️ Executar", key=f"run_{job['id']}"):
+                                    result = st.session_state.scheduler._execute_job(
+                                        job
+                                    )
+                                    st.success("Job executado!")
+                                    st.json(result)
+
+                            with col2:
+                                if st.button(
+                                    "⏸️ Pausar/Ativar", key=f"toggle_{job['id']}"
+                                ):
+                                    st.session_state.scheduler.toggle_job(job["id"])
+                                    st.rerun()
+
+                            with col3:
+                                if st.button("🗑️ Remover", key=f"remove_{job['id']}"):
+                                    st.session_state.scheduler.remove_job(job["id"])
+                                    st.rerun()
+                else:
+                    st.info("Nenhuma automação configurada.")
+
+            with tab2:
+                st.subheader("Nova Automação")
+
+                with st.form("new_automation"):
+                    job_name = st.text_input(
+                        "Nome da Automação", placeholder="Ex: Pausar CPA Alto"
+                    )
+
+                    job_type = st.selectbox(
+                        "Tipo", ["analysis", "optimization", "report", "rule"]
+                    )
+
+                    schedule_type = st.selectbox(
+                        "Agendamento", ["interval", "daily", "weekly", "monthly"]
+                    )
+
+                    if schedule_type == "interval":
+                        schedule_value = st.text_input(
+                            "Intervalo", placeholder="1h, 30m, 24h"
+                        )
+                    elif schedule_type == "daily":
+                        schedule_value = st.text_input("Horário", placeholder="09:00")
+                    elif schedule_type == "weekly":
+                        schedule_value = st.text_input(
+                            "Dia e Horário", placeholder="monday 09:00"
+                        )
+                    else:
+                        schedule_value = st.text_input(
+                            "Dia e Horário", placeholder="01 09:00"
+                        )
+
+                    # Parâmetros específicos
+                    st.markdown("**Parâmetros:**")
+
+                    if job_type == "analysis":
+                        client_id = st.text_input("Client ID (deixe vazio para todos)")
+                        campaigns = st.text_area(
+                            "Campaign IDs (um por linha)",
+                            placeholder="123456789\n987654321",
+                        )
+                        cpa_threshold = st.number_input("CPA Threshold", value=100.0)
+                        roas_threshold = st.number_input("ROAS Threshold", value=2.0)
+
+                    elif job_type == "optimization":
+                        optimization_type = st.selectbox(
+                            "Tipo de Otimização",
+                            [
+                                "scale_high_performers",
+                                "pause_low_performers",
+                                "budget_reallocation",
+                                "creative_rotation",
+                            ],
+                        )
+                        campaigns = st.text_area(
+                            "Campaign IDs (um por linha)",
+                            placeholder="123456789\n987654321",
+                        )
+
+                    elif job_type == "report":
+                        report_type = st.selectbox(
+                            "Tipo de Relatório", ["performance", "creative", "audience"]
+                        )
+                        report_format = st.selectbox(
+                            "Formato", ["json", "csv", "excel"]
+                        )
+                        email = st.text_input("Email para envio (opcional)")
+
+                    elif job_type == "rule":
+                        rule_type = st.selectbox(
+                            "Tipo de Regra",
+                            ["pause_cpa_high", "scale_roas_high", "notify_spend_high"],
+                        )
+                        threshold = st.number_input("Threshold", value=100.0)
+
+                    submitted = st.form_submit_button("Criar Automação", type="primary")
+
+                    if submitted:
+                        # Montar parâmetros
+                        params = {}
+
+                        if job_type == "analysis":
+                            params["client_id"] = client_id or None
+                            params["campaigns"] = [
+                                c.strip() for c in campaigns.split("\n") if c.strip()
+                            ]
+                            params["cpa_threshold"] = cpa_threshold
+                            params["roas_threshold"] = roas_threshold
+
+                        elif job_type == "optimization":
+                            params["type"] = optimization_type
+                            params["campaigns"] = [
+                                c.strip() for c in campaigns.split("\n") if c.strip()
+                            ]
+
+                        elif job_type == "report":
+                            params["report_type"] = report_type
+                            params["format"] = report_format
+                            params["email"] = email or None
+
+                        elif job_type == "rule":
+                            params["type"] = rule_type
+                            params["threshold"] = threshold
+
+                        # Criar job
+                        job = st.session_state.scheduler.add_job(
+                            job_id=f"job_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                            job_type=job_type,
+                            schedule_type=schedule_type,
+                            schedule_value=schedule_value,
+                            params=params,
+                            enabled=True,
+                        )
+
+                        st.success(f"Automação criada: {job['id']}")
+                        st.rerun()
+
+            with tab3:
+                st.subheader("Histórico de Execuções")
+
+                # Mostrar histórico dos jobs
+                for job in jobs:
+                    if job.get("last_result"):
+                        with st.expander(
+                            f"**{job.get('name', job['id'])}** - {job.get('last_run')}"
+                        ):
+                            st.json(job.get("last_result"))
+
+                if not any(job.get("last_result") for job in jobs):
+                    st.info("Nenhum histórico de execução.")
+
+        if st.button("← Voltar"):
+            st.session_state.workflow_state["step"] = "start"
+            st.rerun()
+
+# ETAPA: ANALYTICS
+elif current_step == "analytics":
+    with chat_container:
+        st.markdown("### 📈 Analytics")
+
+        if not active_account:
+            st.warning("⚠️ Configure uma conta Meta Ads primeiro.")
+            if st.button("⚙️ Configurar Conta"):
+                st.session_state.workflow_state["step"] = "config_account"
+                st.rerun()
+        else:
+            # Criar analytics se não existir
+            if st.session_state.analytics is None:
+                st.session_state.analytics = AnalyticsEngine(
+                    api_client=st.session_state.api_client,
+                    memory_manager=st.session_state.memory,
+                )
+
+            # Tabs
+            tab1, tab2, tab3, tab4 = st.tabs(
+                ["📊 Performance", "🎨 Criativos", "👤 Públicos", "📋 Relatórios"]
+            )
+
+            with tab1:
+                st.subheader("Performance de Campanhas")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    date_range = st.selectbox(
+                        "Período",
+                        ["last_7d", "last_14d", "last_30d", "last_90d"],
+                        index=0,
+                    )
+
+                with col2:
+                    if st.button("🔍 Analisar", type="primary"):
+                        st.rerun()
+
+                st.markdown("---")
+
+                # Análise de conta
+                if st.button("📊 Analisar Conta Inteira"):
+                    with st.spinner("Analisando..."):
+                        result = st.session_state.analytics.analyze_account(
+                            date_range=date_range, breakdown="campaign"
+                        )
+
+                        st.success("Análise completa!")
+
+                        # Mostrar resumo
+                        st.json(result.get("summary", {}))
+
+                        # Mostrar métricas
+                        st.markdown("**Métricas:**")
+                        st.json(result.get("metrics", {}))
+
+            with tab2:
+                st.subheader("Análise de Criativos")
+
+                st.info(
+                    "Em desenvolvimento - Análise detalhada de performance de criativos"
+                )
+
+            with tab3:
+                st.subheader("Análise de Públicos")
+
+                st.info("Em desenvolvimento - Análise de performance por público")
+
+            with tab4:
+                st.subheader("Gerar Relatório")
+
+                with st.form("generate_report"):
+                    report_type = st.selectbox(
+                        "Tipo de Relatório", ["performance", "creative", "audience"]
+                    )
+
+                    date_range = st.selectbox(
+                        "Período", ["last_7d", "last_14d", "last_30d"]
+                    )
+
+                    format_type = st.selectbox("Formato", ["json", "csv"])
+
+                    submitted = st.form_submit_button(
+                        "📄 Gerar Relatório", type="primary"
+                    )
+
+                    if submitted:
+                        with st.spinner("Gerando relatório..."):
+                            # Lista de campanhas ativas
+                            campaigns_result = (
+                                st.session_state.api_client.list_campaigns(
+                                    status="ACTIVE"
+                                )
+                            )
+                            campaigns = [
+                                c["id"] for c in campaigns_result.get("campaigns", [])
+                            ]
+
+                            report = st.session_state.analytics.generate_report(
+                                report_type=report_type,
+                                campaigns=campaigns,
+                                date_range=date_range,
+                                format=format_type,
+                            )
+
+                            st.success("Relatório gerado!")
+
+                            # Mostrar resumo
+                            st.markdown("**Resumo Executivo:**")
+                            st.json(report.get("summary", {}))
+
+                            # Mostrar totais
+                            st.markdown("**Totais:**")
+                            st.json(report.get("totals", {}))
+
+                            # Download
+                            if format_type == "json":
+                                st.download_button(
+                                    "📥 Baixar JSON",
+                                    json.dumps(report, indent=2),
+                                    file_name=f"relatorio_{report_type}_{datetime.now().strftime('%Y%m%d')}.json",
+                                    mime="application/json",
+                                )
+                            elif format_type == "csv":
+                                csv_data = st.session_state.analytics._format_csv(
+                                    report
+                                )
+                                st.download_button(
+                                    "📥 Baixar CSV",
+                                    csv_data,
+                                    file_name=f"relatorio_{report_type}_{datetime.now().strftime('%Y%m%d')}.csv",
+                                    mime="text/csv",
+                                )
+
+        if st.button("← Voltar"):
             st.session_state.workflow_state["step"] = "start"
             st.rerun()
 

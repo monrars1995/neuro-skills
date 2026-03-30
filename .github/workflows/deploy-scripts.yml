@@ -1,0 +1,65 @@
+name: Deploy Scripts Worker
+
+on:
+  push:
+    branches:
+      - beta
+      - main
+    paths:
+      - 'workers/scripts/**'
+      - 'install.sh'
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Workers
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to Cloudflare Workers
+        run: |
+          cd workers/scripts
+          wrangler deploy --var GITHUB_REPO:monrars1995/neuro-skills GITHUB_BRANCH:${{ github.ref_name }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Purge KV Cache
+        if: success()
+        run: |
+          cd workers/scripts
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install.sh" || true
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install-claude-code.sh" || true
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install-opencode.sh" || true
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install-antigravity.sh" || true
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install-cursor.sh" || true
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install-gemini.sh" || true
+          wrangler kv:key delete --binding SCRIPTS_KV "script:install-codex.sh" || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Comment on commit
+        if: success()
+        run: |
+          echo "✅ Deployed to scripts.goldneuron.io"
+          echo "📦 Scripts available at:"
+          echo "  - https://scripts.goldneuron.io/install.sh"
+          echo "  - https://scripts.goldneuron.io/install-claude-code.sh"
+          echo "  - https://scripts.goldneuron.io/install-opencode.sh"
+          echo "  - https://scripts.goldneuron.io/install-cursor.sh"
+          echo "  - https://scripts.goldneuron.io/install-gemini.sh"
+          echo "  - https://scripts.goldneuron.io/install-codex.sh"
+          echo "  - https://scripts.goldneuron.io/install-antigravity.sh"

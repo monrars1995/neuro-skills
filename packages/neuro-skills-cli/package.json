@@ -1,12 +1,12 @@
 {
-  "name": "neuro-skills",
-  "version": "2.3.0",
+  "name": "@goldneuronio/neuro-skills",
+  "version": "2.3.1",
   "description": "O bastidor técnico que o mercado não mostra - Framework de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI",
   "author": "Monrars <@monrars>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/monrars1995/neuro-skills.git"
+    "url": "git+https://github.com/monrars1995/neuro-skills.git"
   },
   "homepage": "https://goldneuron.io/",
   "bugs": {

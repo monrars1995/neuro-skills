@@ -11,18 +11,11 @@ const SCRIPTS = {
   'install-codex.sh': 'scripts/install-codex.sh'
 };
 
-const CONTENT_TYPES = {
-  'sh': 'text/x-shellscript',
-  'md': 'text/markdown',
-  'json': 'application/json'
-};
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.slice(1);
     
-    // CORS headers
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -30,12 +23,10 @@ export default {
       'Access-Control-Max-Age': '86400'
     };
     
-    // Handle OPTIONS for CORS
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
     
-    // Root path - show index
     if (path === '' || path === '/') {
       return new Response(getIndexPage(), {
         headers: {
@@ -45,7 +36,6 @@ export default {
       });
     }
     
-    // API endpoint for npm info
     if (path === 'api/npm') {
       const npmData = {
         name: '@goldneuronio/neuro-skills',
@@ -67,7 +57,6 @@ export default {
       });
     }
     
-    // Get script content from KV orGitHub
     const scriptPath = SCRIPTS[path];
     if (!scriptPath) {
       return new Response('Not Found', { 
@@ -77,18 +66,20 @@ export default {
     }
     
     try {
-      // Try to get from KV cache first
-      const cacheKey = `script:${path}`;
-      const cached = await env.SCRIPTS_KV?.get(cacheKey);
-      
-      if (cached) {
-        return new Response(cached, {
-          headers: {
-            'Content-Type': 'text/x-shellscript; charset=utf-8',
-            'Cache-Control': 'public, max-age=3600',
-            ...corsHeaders
-          }
-        });
+      // Check KV cache if available
+      if (env.SCRIPTS_KV) {
+        const cacheKey = `script:${path}`;
+        const cached = await env.SCRIPTS_KV.get(cacheKey);
+        
+        if (cached) {
+          return new Response(cached, {
+            headers: {
+              'Content-Type': 'text/x-shellscript; charset=utf-8',
+              'Cache-Control': 'public, max-age=3600',
+              ...corsHeaders
+            }
+          });
+        }
       }
       
       // Fetch from GitHub
@@ -101,8 +92,11 @@ export default {
       
       const content = await response.text();
       
-      // Cache in KV for 1 hour
-      await env.SCRIPTS_KV?.put(cacheKey, content, { expirationTtl: 3600 });
+      // Cache in KV if available
+      if (env.SCRIPTS_KV) {
+        const cacheKey = `script:${path}`;
+        await env.SCRIPTS_KV.put(cacheKey, content, { expirationTtl: 3600 });
+      }
       
       return new Response(content, {
         headers: {
@@ -114,7 +108,6 @@ export default {
     } catch (error) {
       console.error('Error fetching script:', error);
       
-      // Return fallback script
       const fallback = getFallbackScript(path);
       return new Response(fallback, {
         headers: {
@@ -155,14 +148,8 @@ function getIndexPage() {
       min-height: 100vh;
       padding: 2rem;
     }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 3rem; }
     h1 {
       font-size: 2.5rem;
       background: linear-gradient(135deg, #60a5fa, #a78bfa);
@@ -170,10 +157,7 @@ function getIndexPage() {
       -webkit-text-fill-color: transparent;
       margin-bottom: 0.5rem;
     }
-    .subtitle {
-      color: #888;
-      font-size: 1.1rem;
-    }
+    .subtitle { color: #888; font-size: 1.1rem; }
     .links {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -192,10 +176,7 @@ function getIndexPage() {
       border-color: #60a5fa;
       transform: translateY(-2px);
     }
-    .link-card h3 {
-      color: #60a5fa;
-      margin-bottom: 0.5rem;
-    }
+    .link-card h3 { color: #60a5fa; margin-bottom: 0.5rem; }
     .link-card code {
       display: block;
       background: rgba(0, 0, 0, 0.3);
@@ -212,10 +193,7 @@ function getIndexPage() {
       padding: 2rem;
       margin-bottom: 2rem;
     }
-    .npm-section h2 {
-      color: #60a5fa;
-      margin-bottom: 1rem;
-    }
+    .npm-section h2 { color: #60a5fa; margin-bottom: 1rem; }
     .npm-section code {
       display: block;
       background: rgba(0, 0, 0, 0.3);
@@ -224,18 +202,9 @@ function getIndexPage() {
       margin-bottom: 1rem;
       font-size: 1rem;
     }
-    footer {
-      text-align: center;
-      color: #666;
-      margin-top: 3rem;
-    }
-    footer a {
-      color: #60a5fa;
-      text-decoration: none;
-    }
-    footer a:hover {
-      text-decoration: underline;
-    }
+    footer { text-align: center; color: #666; margin-top: 3rem; }
+    footer a { color: #60a5fa; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -258,27 +227,22 @@ function getIndexPage() {
         <h3>Claude Code</h3>
         <code>curl -fsSL https://scripts.goldneuron.io/install-claude-code.sh | bash</code>
       </div>
-      
       <div class="link-card">
         <h3>OpenCode</h3>
         <code>curl -fsSL https://scripts.goldneuron.io/install-opencode.sh | bash</code>
       </div>
-      
       <div class="link-card">
         <h3>Cursor</h3>
         <code>curl -fsSL https://scripts.goldneuron.io/install-cursor.sh | bash</code>
       </div>
-      
       <div class="link-card">
         <h3>Gemini CLI</h3>
         <code>curl -fsSL https://scripts.goldneuron.io/install-gemini.sh | bash</code>
       </div>
-      
       <div class="link-card">
         <h3>OpenAI Codex</h3>
         <code>curl -fsSL https://scripts.goldneuron.io/install-codex.sh | bash</code>
       </div>
-      
       <div class="link-card">
         <h3>Antigravity</h3>
         <code>curl -fsSL https://scripts.goldneuron.io/install-antigravity.sh | bash</code>
@@ -287,7 +251,7 @@ function getIndexPage() {
     
     <footer>
       <p>
-        <a href="https://goldneuron.io/">🌐 Site Oficial</a> • 
+        <a href="https://goldneuron.io/">🌐 Site</a> • 
         <a href="https://goldneuron.io/drops">📧 Newsletter</a> • 
         <a href="https://github.com/monrars1995/neuro-skills">📦 GitHub</a> • 
         <a href="https://www.npmjs.com/package/@goldneuronio/neuro-skills">📦 npm</a>

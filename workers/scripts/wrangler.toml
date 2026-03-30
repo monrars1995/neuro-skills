@@ -2,32 +2,17 @@ name = "neuro-skills-scripts"
 main = "index.js"
 compatibility_date = "2024-01-01"
 
-# Account ID (configure via wrangler login)
-# account_id = ""
+# Workers.dev subdomain
+[env.production]
+name = "neuro-skills-scripts"
+routes = [
+  { pattern = "scripts.goldneuron.io/*" }
+]
 
-# Workers Site configuration
-[site]
-bucket = "./public"
-
-# KV Namespace for caching
-[[kv_namespaces]]
-binding = "SCRIPTS_KV"
-id = "" # Will be set after `wrangler kv:namespace create`
-
-# Routes
-[[routes]]
-pattern = "scripts.goldneuron.io/*"
-zone_name = "goldneuron.io"
+# Enable workers.dev for testing
+workers_dev = true
 
 # Environment variables
 [vars]
 GITHUB_REPO = "monrars1995/neuro-skills"
 GITHUB_BRANCH = "beta"
-
-# Production environment
-[env.production]
-name = "neuro-skills-scripts-prod"
-
-# Staging environment  
-[env.staging]
-name = "neuro-skills-scripts-staging"

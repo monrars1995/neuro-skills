@@ -68,7 +68,7 @@ class MetaAPIClient:
     # ========== VIDEO UPLOAD ==========
 
     def upload_video(
-        selfvideo_path: Path, progress_callback: Optional[Callable] = None
+        self, video_path: Path, progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
         """
         Upload de vídeo para Meta Ads com acompanhamento de progresso

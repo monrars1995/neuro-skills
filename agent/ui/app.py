@@ -1045,72 +1045,224 @@ elif current_step == "create_campaign":
         uploaded_videos = st.session_state.workflow_state.get("uploaded_videos", [])
         uploaded_images = st.session_state.workflow_state.get("uploaded_images", [])
         copy_variants = st.session_state.workflow_state.get("copy_variants", [])
+        campaign_name = st.session_state.workflow_state.get("campaign_name", "Campanha")
 
         # Resumo
         st.markdown("**Resumo da Campanha:**")
         st.markdown(f"- **Cliente:** {briefing.get('client')}")
+        st.markdown(f"- **Produto:** {briefing.get('product')}")
         st.markdown(f"- **Objetivo:** {briefing.get('objective')}")
         st.markdown(f"- **Orçamento:** R$ {briefing.get('budget')}/dia")
         st.markdown(f"- **Vídeos:** {len(uploaded_videos)}")
+        st.markdown(f"- **Imagens:** {len(uploaded_images)}")
         st.markdown(f"- **Cópias:** {len(copy_variants)}")
 
         st.markdown("---")
 
-        # Criar campanha
-        if st.button("🎯 Criar Campanha no Meta Ads", type="primary"):
-            with st.spinner("Criando campanha..."):
-                # TODO: Implementar criação real
-                st.info("🚧 Funcionalidade em desenvolvimento")
+        # Verificar se tem tudo
+        if not uploaded_videos and not uploaded_images:
+            st.error("❌ Nenhum criativo disponível. Faça upload primeiro.")
+            if st.button("← Voltar para Upload"):
+                st.session_state.workflow_state["step"] = "upload"
+                st.rerun()
+        elif not copy_variants:
+            st.error("❌ Nenhuma cópia gerada. Gere as cópias primeiro.")
+            if st.button("← Voltar para Briefing"):
+                st.session_state.workflow_state["step"] = "briefing"
+                st.rerun()
+        else:
+            # Criar campanha
+            if st.button("🎯 Criar Campanha no Meta Ads", type="primary"):
+                progress_container = st.empty()
+                progress_bar = progress_container.progress(0)
+                status_text = st.empty()
 
-                # Salvar no histórico
-                campaign_record = {
-                    "campaign_name": st.session_state.workflow_state.get(
-                        "campaign_name"
-                    ),
-                    "briefing": briefing,
-                    "targeting": targeting,
-                    "creatives": {"videos": uploaded_videos, "images": uploaded_images},
-                    "copy_variants": copy_variants,
-                    "created_at": datetime.now().isoformat(),
-                    "status": "draft",
-                }
+                try:
+                    # Obter page_id da conta ativa
+                    active_acc = get_active_account()
+                    page_id = active_acc.get("page_id") if active_acc else None
 
-                # Salvar na memória do cliente
-                if client_id:
-                    st.session_state.memory.save_campaign(
-                        client_id,
-                        st.session_state.workflow_state.get("campaign_name"),
-                        campaign_record,
+                    if not page_id:
+                        st.warning(
+                            "⚠️ Page ID não configurado. A campanha será criada mas os ads podem precisar de ajuste manual."
+                        )
+
+                    status_text.text("📦 Preparando criativos...")
+                    progress_bar.progress(10)
+
+                    # Criar estrutura de campanha
+                    creatives_data = {
+                        "videos": uploaded_videos,
+                        "images": uploaded_images,
+                        "copies": copy_variants,
+                    }
+
+                    status_text.text("🎯 Criando campanha...")
+                    progress_bar.progress(20)
+
+                    # Criar campanha
+                    campaign_name_full = f"{briefing.get('client', 'Cliente')} - {briefing.get('product', 'Produto')} - {datetime.now().strftime('%Y-%m-%d')}"
+                    campaign_result = st.session_state.api_client.create_campaign(
+                        name=campaign_name_full,
+                        objective=briefing.get("objective", "CONVERSIONS"),
+                        status="PAUSED",
                     )
 
-                st.success("✅ Campanha salva!")
+                    if "id" not in campaign_result:
+                        st.error(
+                            f"❌ Erro ao criar campanha: {campaign_result.get('error', 'Erro desconhecido')}"
+                        )
+                    else:
+                        campaign_id = campaign_result["id"]
+                        st.session_state.workflow_state["campaign_id"] = campaign_id
+                        status_text.text(f"✅ Campanha criada: {campaign_id}")
+                        progress_bar.progress(40)
 
-                st.markdown("### 📋 Próximos Passos:")
-                st.markdown("""
-                1. **Revisar** os criativos e cópias
-                2. **Testar** as variações de copy
-                3. **Lançar** a campanha
-                4. **Monitorar** a performance
-                """)
+                        # Criar ad set
+                        status_text.text("📊 Criando conjunto de anúncios...")
+                        budget = briefing.get("budget", 5000)
+                        adset_result = st.session_state.api_client.create_ad_set(
+                            campaign_id=campaign_id,
+                            name=f"{campaign_name_full} - Ad Set",
+                            daily_budget=budget,
+                            targeting=targeting,
+                            optimization_goal="CONVERSIONS",
+                        )
 
-                if st.button("➕ Criar Nova Campanha"):
-                    # Reset workflow
-                    st.session_state.workflow_state = {
-                        "step": "start",
-                        "client_id": None,
-                        "campaign_name": None,
-                        "briefing": None,
-                        "creatives": [],
-                        "uploaded_videos": [],
-                        "uploaded_images": [],
-                        "brand_voice": None,
-                        "targeting": None,
-                        "copy_variants": [],
-                        "campaign_id": None,
-                        "adset_id": None,
-                        "ad_ids": [],
-                    }
-                    st.rerun()
+                        if "id" not in adset_result:
+                            st.error(
+                                f"❌ Erro ao criar ad set: {adset_result.get('error', 'Erro desconhecido')}"
+                            )
+                        else:
+                            adset_id = adset_result["id"]
+                            st.session_state.workflow_state["adset_id"] = adset_id
+                            status_text.text(f"✅ Ad Set criado: {adset_id}")
+                            progress_bar.progress(60)
+
+                            # Criar ads
+                            ads_created = []
+                            for i, video in enumerate(uploaded_videos):
+                                if video.get("status") == "completed" and video.get(
+                                    "video_id"
+                                ):
+                                    # Obter copy correspondente
+                                    copy = (
+                                        copy_variants[i]
+                                        if i < len(copy_variants)
+                                        else copy_variants[0]
+                                    )
+
+                                    status_text.text(
+                                        f"🎨 Criando creative {i + 1}/{len(uploaded_videos)}..."
+                                    )
+                                    progress_bar.progress(
+                                        60 + (i / len(uploaded_videos)) * 30
+                                    )
+
+                                    # Criar creative
+                                    creative_result = st.session_state.api_client.create_ad_creative(
+                                        name=f"{campaign_name_full} - {video['filename']}",
+                                        page_id=page_id or "0",
+                                        video_id=video["video_id"],
+                                        message=copy.get("primary_text", ""),
+                                    )
+
+                                    if "id" in creative_result:
+                                        creative_id = creative_result["id"]
+
+                                        # Criar ad
+                                        ad_result = st.session_state.api_client.create_ad(
+                                            ad_set_id=adset_id,
+                                            name=f"{campaign_name_full} - Ad {i + 1}",
+                                            creative_id=creative_id,
+                                        )
+
+                                        if "id" in ad_result:
+                                            ads_created.append(
+                                                {
+                                                    "ad_id": ad_result["id"],
+                                                    "creative_id": creative_id,
+                                                    "video_id": video["video_id"],
+                                                    "copy": copy,
+                                                }
+                                            )
+
+                            st.session_state.workflow_state["ad_ids"] = ads_created
+                            progress_bar.progress(95)
+
+                            # Salvar na memória
+                            client_id = st.session_state.memory.get_active_client()
+                            campaign_record = {
+                                "campaign_id": campaign_id,
+                                "adset_id": adset_id,
+                                "ad_ids": [a["ad_id"] for a in ads_created],
+                                "campaign_name": campaign_name_full,
+                                "briefing": briefing,
+                                "targeting": targeting,
+                                "creatives": creatives_data,
+                                "created_at": datetime.now().isoformat(),
+                                "status": "PAUSED",
+                            }
+
+                            if client_id:
+                                st.session_state.memory.save_campaign(
+                                    client_id, campaign_name, campaign_record
+                                )
+
+                            progress_bar.progress(100)
+                            status_text.empty()
+
+                            st.success("✅ Campanha criada com sucesso!")
+
+                            st.markdown("### 📊 Detalhes da Campanha")
+                            st.markdown(f"**Campaign ID:** `{campaign_id}`")
+                            st.markdown(f"**Ad Set ID:** `{adset_id}`")
+                            st.markdown(f"**Ads criados:** {len(ads_created)}")
+
+                            for i, ad in enumerate(ads_created):
+                                with st.expander(f"Ad {i + 1}"):
+                                    st.markdown(f"**Ad ID:** `{ad['ad_id']}`")
+                                    st.markdown(f"**Copy:** {ad['copy'].get('name')}")
+
+                            st.markdown("---")
+                            st.markdown("### 📋 Próximos Passos:")
+                            st.markdown("""
+                            1. Acesse o **Gerenciador de Anúncios** do Meta
+                            2. **Revise** os criativos e cópias
+                            3. Configure o **pixel** e **conversões**
+                            4. **Ative** a campanha quando estiver pronto
+                            5. **Monitore** a performance diariamente
+                            """)
+
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.button("➕ Criar Nova Campanha"):
+                                    st.session_state.workflow_state = {
+                                        "step": "start",
+                                        "client_id": None,
+                                        "campaign_name": None,
+                                        "briefing": None,
+                                        "creatives": [],
+                                        "uploaded_videos": [],
+                                        "uploaded_images": [],
+                                        "brand_voice": None,
+                                        "targeting": None,
+                                        "copy_variants": [],
+                                        "campaign_id": None,
+                                        "adset_id": None,
+                                        "ad_ids": [],
+                                    }
+                                    st.rerun()
+                            with col2:
+                                if st.button("📊 Ver Configurações"):
+                                    st.session_state.workflow_state["step"] = "config"
+                                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"❌ Erro ao criar campanha: {str(e)}")
+                    if st.button("← Voltar e Tentar Novamente"):
+                        st.session_state.workflow_state["step"] = "generate"
+                        st.rerun()
 
         if st.button("← Voltar"):
             st.session_state.workflow_state["step"] = "generate"

@@ -1,8 +1,72 @@
 # Neuro Skills
 
-Skills de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI.
+> Framework de automação de Meta Ads para Claude Code, OpenAI Codex e Gemini CLI
 
-## Skills
+**Site Oficial:** [goldneuron.io](https://goldneuron.io/)  
+**Comunidade:** [Drops](https://goldneuron.io/drops) - O bastidor técnico que o mercado não mostra  
+**Instagram:** [@monrars](https://instagram.com/monrars)
+
+---
+
+## 🚀 Sobre
+
+Skills de automação de Meta Ads para criar, gerenciar e otimizar campanhas de tráfego pago com IA. Construído para donos de operação, heads e gestores que vivem o jogo real: processo, rastreabilidade, automação, decisão e execução.
+
+### Comunidade Drops
+
+Uma comunidade construída para profissionais que querem:
+- **Processo** - Workflows e automações testados em operações reais
+- **Rastreabilidade** - Atribuição completa do funil
+- **Automação** - Cron jobs, sincronização offline, otimização automática
+- **Decisão** - Dados para tomar decisões baseadas em ROI/ROAS
+- **Execução** - Implementação rápida com skills prontos
+
+Newsletter semanal com estudos de caso, implementações e treinamentos.
+
+Gratuito e aberto em [goldneuron.io/drops](https://goldneuron.io/drops).
+
+---
+
+## 📁 Agentes por Vertical
+
+### 🚗 Concessionárias
+- Ciclo de venda longo (7-90 dias)
+- Conversão offline obrigatória
+- Janela de atribuição: 90 dias
+- Integração CRM específica
+- [Ver SKILL.md](agents/concessionarias/SKILL.md) | [Ver TOOLS.md](agents/concessionarias/TOOLS.md)
+
+### 🏠 Imobiliárias
+- Ticket médio alto (R$300k-2M)
+- Inventário único por localização
+- LTV + comissão (3-6%)
+- Tours virtuais
+- [Ver SKILL.md](agents/imobiliarias/SKILL.md)
+
+### 🛒 E-commerce
+- Ciclo curto (1-7 dias)
+- DPA (Dynamic Product Ads)
+- Catálogo de produtos
+- Eventos em tempo real
+- [Ver SKILL.md](agents/ecommerce/SKILL.md)
+
+### 🎓 Educação
+- Sazonalidade forte (vestibular, volta às aulas)
+- LTV alto (48 meses × mensalidade)
+- Modelo de assinatura
+- Matrícula offline
+- [Ver SKILL.md](agents/educacao/SKILL.md)
+
+### 🏥 Saúde
+- Compliance LGPD/HIPAA
+- Targeting privacy-safe
+- LTV + indicação (boca a boca)
+- Auditoria mensal
+- [Ver SKILL.md](agents/saude/SKILL.md)
+
+---
+
+## 🎯 Skills Principais
 
 ### 🧠 neuro-ads-manager
 Gerenciador completo de Meta Ads com CRUD, Analytics, Automação e integração API v21.0. Plataforma unificada para gerenciar campanhas de ponta a ponta.
@@ -350,27 +414,39 @@ Isso cria:
 
 ---
 
-## Autor
+## 📞 Contato
 
-**Monrars**
+**Monrars** - Criador e Mantenedor
 
-- Instagram: [@monrars](https://instagram.com/monrars)
-- GitHub: [@monrars1995](https://github.com/monrars1995)
-
----
-
-## Licença
-
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+- 🌐 **Site:** [goldneuron.io](https://goldneuron.io/)
+- 📸 **Instagram:** [@monrars](https://instagram.com/monrars)
+- 💻 **GitHub:** [@monrars1995](https://github.com/monrars1995)
+- 🚀 **Comunidade:** [Drops](https://goldneuron.io/drops)
 
 ---
 
-## Versões
+## 📜 Licença
+
+MIT License with Attribution - Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+Ao usar este projeto, você concorda em:
+- Manter atribuição ao autor original (Monrars)
+- Incluir link para o repositório original
+- Não rebrandear ou revender como produto standalone
+
+Uso comercial é permitido sob os termos da licença.
+
+Para licenças empresariais ou suporte, entre em contato.
+
+---
+
+## 📊 Versões
 
 | Versão | Branch | Status | Descrição |
 |--------|--------|--------|-----------|
-| `v1.0.0` | `main` | Produção | Versão estável atual |
-| `v2.0.0-beta` | `beta` | Beta | Sistema de memória compartilhada |
+| `v1.0.0` | `main` | Produção | Versão estável inicial |
+| `v2.0.0-beta` | `beta` | Beta | Sistema de memória + agentes verticais |
+| `v2.2.0-beta` | `beta` | Atual | 5 agentes verticais especializados |
 
 Para usar a versão beta:
 ```bash
@@ -379,6 +455,28 @@ git clone -b beta https://github.com/monrars1995/neuro-skills.git
 
 ---
 
-## Criado por
+## 🤝 Contribuindo
 
-@monrars
+Contribuições são bem-vindas! Por favor:
+
+1. Fork o projeto
+2. Crie sua branch (`git checkout -b feature/NovaFeature`)
+3. Commit suas mudanças (`git commit -m 'Add: NovaFeature'`)
+4. Push para a branch (`git push origin feature/NovaFeature`)
+5. Abra um Pull Request
+
+---
+
+## 🙏 Agradecimentos
+
+Construído com ❤️ para a comunidade de tráfego pago brasileira.
+
+---
+
+<div align="center">
+
+**[⬆ Voltar ao Topo](#neuro-skills)**
+
+**Feito por [@monrars](https://instagram.com/monrars) | [goldneuron.io](https://goldneuron.io/)**
+
+</div>

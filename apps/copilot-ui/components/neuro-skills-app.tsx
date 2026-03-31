@@ -6,12 +6,10 @@ import {
   useCopilotAdditionalInstructions,
   useCopilotReadable,
 } from "@copilotkit/react-core";
-import {
-  CopilotPopup,
-  CopilotSidebar,
-} from "@copilotkit/react-core/v2";
+import { CopilotSidebar, useConfigureSuggestions } from "@copilotkit/react-core/v2";
 import { startTransition, useMemo, useState } from "react";
 
+import { A2UIRenderer } from "@/components/a2ui-renderer";
 import { analyzeBriefingText } from "@/lib/briefing";
 import {
   DEFAULT_ACCOUNTS,
@@ -24,7 +22,6 @@ import {
   DEFAULT_VERTICAL,
   VERTICAL_LABELS,
 } from "@/lib/default-state";
-import { A2UIRenderer } from "@/components/a2ui-renderer";
 import type {
   AgentDefinition,
   AgentEvent,
@@ -44,6 +41,38 @@ import type {
 
 type PendingAsset = UploadedAsset & { base64?: string };
 
+const SECTION_OPTIONS: Array<{
+  id: AppSection;
+  label: string;
+  eyebrow: string;
+  description: string;
+}> = [
+  { id: "overview", label: "Overview", eyebrow: "Base", description: "Visão geral da operação, contas e campanhas." },
+  { id: "briefing", label: "Briefing", eyebrow: "Input", description: "Valide briefing e identifique lacunas antes de executar." },
+  { id: "creatives", label: "Creatives", eyebrow: "Assets", description: "Suba criativos e rode análise multimodal com Gemini." },
+  { id: "agents", label: "Agents", eyebrow: "AG-UI", description: "Rode agents do backend Agno e renderize A2UI." },
+  { id: "campaigns", label: "Campaigns", eyebrow: "Launch", description: "Estruture campanhas e rascunhos operacionais." },
+  { id: "analytics", label: "Analytics", eyebrow: "Read", description: "Leia sinais rápidos de performance da conta." },
+  { id: "automations", label: "Automation", eyebrow: "Scale", description: "Mantenha regras e jobs para proteger a conta." },
+  { id: "settings", label: "Settings", eyebrow: "Config", description: "Clientes, contas e parâmetros base da operação." },
+];
+
+const CHAT_LABELS = {
+  modalHeaderTitle: "Neuro Skills Copilot",
+  welcomeMessageText:
+    "Use o chat para navegar pela operação, criar campanhas, analisar criativos e acionar agents. Eu já enxergo o estado completo da aplicação.",
+  chatInputPlaceholder: "Peça uma estratégia, rode um agent, revise briefing ou crie campanha...",
+  chatToggleOpenLabel: "Abrir copiloto",
+  chatToggleCloseLabel: "Fechar copiloto",
+};
+
+const CHAT_SUGGESTIONS = [
+  { title: "Estratégia", message: "Monte uma estratégia full-funnel para concessionárias usando Meta Ads." },
+  { title: "Criativos", message: "Analise os criativos enviados e sugira novas variações de hook." },
+  { title: "Campaign", message: "Crie um rascunho de campanha com budget inicial e copy angle." },
+  { title: "Agent", message: "Rode o agent Traffic Strategist e me devolva um plano operacional." },
+];
+
 export function NeuroSkillsApp() {
   return (
     <CopilotKit runtimeUrl="/api/copilotkit" showDevConsole>
@@ -53,10 +82,17 @@ export function NeuroSkillsApp() {
 }
 
 function NeuroSkillsWorkspace() {
+  useConfigureSuggestions(
+    {
+      suggestions: CHAT_SUGGESTIONS,
+    },
+    [],
+  );
+
   useCopilotAdditionalInstructions(
     {
       instructions:
-        "Você é o copiloto principal do Neuro Skills. Ajude o usuário a navegar pela aplicação, estruturar briefings, criar campanhas, configurar automações e analisar criativos com foco em performance.",
+        "Você é o copiloto principal do Neuro Skills. Atue como operador sênior de mídia e growth. Prefira navegar pela aplicação, atualizar estado com ações, estruturar campanhas, diagnosticar criativos e usar agents quando isso reduzir ambiguidade.",
     },
     [],
   );
@@ -82,7 +118,9 @@ function NeuroSkillsWorkspace() {
   const [isBusy, setIsBusy] = useState(false);
 
   const activeVertical = VERTICAL_LABELS[vertical];
+  const activeSection = SECTION_OPTIONS.find((item) => item.id === section) || SECTION_OPTIONS[0];
   const selectedAgent = agentDefinitions.find((agent) => agent.id === selectedAgentId) || agentDefinitions[0];
+
   const metrics = useMemo(
     () => [
       { label: "Spend", value: `R$ ${analytics.spend.toLocaleString("pt-BR")}` },
@@ -306,7 +344,7 @@ function NeuroSkillsWorkspace() {
         }),
       });
 
-      const payload = (await response.json()) as { analysis?: CreativeAnalysis; error?: string };
+      const payload = (await response.json()) as { analysis?: CreativeAnalysis };
       if (payload.analysis) {
         setAssets((current) =>
           current.map((asset) =>
@@ -382,10 +420,7 @@ function NeuroSkillsWorkspace() {
         }),
       });
 
-      if (!response.body) {
-        setIsAgentRunning(false);
-        return;
-      }
+      if (!response.body) return;
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -433,56 +468,27 @@ function NeuroSkillsWorkspace() {
   }
 
   return (
-    <div className="app-shell">
-      <aside className="left-rail">
-        <div className="brand-block">
-          <div className="brand-mark">N</div>
-          <div>
-            <h1>Neuro Skills</h1>
-            <p>Copilot application</p>
+    <CopilotSidebar defaultOpen width={420} labels={CHAT_LABELS}>
+      {() => (
+      <main className="shell-root">
+        <header className="topbar">
+          <div className="topbar-brand">
+            <div className="brand-mark">N</div>
+            <div>
+              <span className="eyebrow">Neuro Skills</span>
+              <h1>Agentic Workspace</h1>
+            </div>
           </div>
-        </div>
-        <nav className="nav-list">
-          {([
-            ["overview", "Overview"],
-            ["briefing", "Briefing"],
-            ["creatives", "Creatives"],
-            ["agents", "Agents"],
-            ["campaigns", "Campaigns"],
-            ["analytics", "Analytics"],
-            ["automations", "Automations"],
-            ["settings", "Settings"],
-          ] as [AppSection, string][]).map(([key, label]) => (
-            <button key={key} className={section === key ? "nav-item active" : "nav-item"} onClick={() => setSection(key)}>
-              {label}
-            </button>
-          ))}
-        </nav>
-        <div className="vertical-card">
-          <span className="eyebrow">Vertical ativa</span>
-          <strong>{activeVertical.title}</strong>
-          <p>{activeVertical.description}</p>
-          <select value={vertical} onChange={(event) => setVertical(event.target.value as VerticalKey)}>
-            {Object.entries(VERTICAL_LABELS).map(([key, data]) => (
-              <option key={key} value={key}>
-                {data.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      </aside>
 
-      <main className="main-area">
-        <header className="hero-card">
-          <div>
-            <span className="eyebrow">Aplicação completa</span>
-            <h2>Meta Ads + CopilotKit + Agno + AG-UI + A2UI</h2>
-            <p>
-              Interface web agent-native com CopilotKit, backend Agno para agents operacionais, stream AG-UI e
-              widgets declarativos A2UI para a camada visual.
-            </p>
-          </div>
-          <div className="hero-actions">
+          <div className="topbar-meta">
+            <div className="context-pill">
+              <span>Vertical</span>
+              <strong>{activeVertical.title}</strong>
+            </div>
+            <div className="context-pill context-pill-live">
+              <span>Agent</span>
+              <strong>{selectedAgent?.name}</strong>
+            </div>
             <label className="upload-button">
               Enviar criativo
               <input type="file" accept="image/*,video/*" multiple onChange={(event) => handleFiles(event.target.files)} />
@@ -490,139 +496,149 @@ function NeuroSkillsWorkspace() {
           </div>
         </header>
 
-        <section className="metrics-grid">
-          {metrics.map((metric) => (
-            <article key={metric.label} className="metric-card">
-              <span>{metric.label}</span>
-              <strong>{metric.value}</strong>
-            </article>
-          ))}
-        </section>
-
-        {section === "overview" && (
-          <section className="panel-grid">
-            <Panel title="Clientes">
-              {clients.map((client) => (
-                <RecordRow key={client.id} title={client.name} subtitle={`${client.industry} · ${VERTICAL_LABELS[client.vertical].title}`} />
-              ))}
-            </Panel>
-            <Panel title="Contas Meta">
-              {accounts.map((account) => (
-                <RecordRow key={account.id} title={account.name} subtitle={account.adAccountId} />
-              ))}
-            </Panel>
-            <Panel title="Campanhas">
-              {campaigns.map((campaign) => (
-                <RecordRow key={campaign.id} title={campaign.name} subtitle={`${campaign.objective} · ${campaign.status}`} />
-              ))}
-            </Panel>
-            <Panel title="Automações">
-              {automations.map((job) => (
-                <RecordRow key={job.id} title={job.name} subtitle={`${job.type} · ${job.schedule}`} />
-              ))}
-            </Panel>
-          </section>
-        )}
-
-        {section === "briefing" && (
-          <section className="panel-grid single">
-            <Panel title="Analisador de briefing">
-              <textarea
-                className="briefing-box"
-                placeholder="Cole o briefing completo aqui..."
-                value={briefing}
-                onChange={(event) => setBriefing(event.target.value)}
-              />
-              <div className="button-row">
-                <button className="primary" onClick={() => setBriefingAnalysis(analyzeBriefingText(briefing))}>
-                  Analisar briefing
-                </button>
-              </div>
-              {briefingAnalysis && (
-                <div className="analysis-grid">
-                  <RecordRow title={`Cliente: ${briefingAnalysis.client || "N/A"}`} subtitle={`Produto: ${briefingAnalysis.product || "N/A"}`} />
-                  <RecordRow title={`Objetivo: ${briefingAnalysis.objective || "N/A"}`} subtitle={`Budget: ${briefingAnalysis.budget ? `R$ ${briefingAnalysis.budget}` : "N/A"}`} />
-                  <RecordRow title={`CPA: ${briefingAnalysis.targetCpa || "N/A"}`} subtitle={`ROAS: ${briefingAnalysis.targetRoas || "N/A"}`} />
-                  <RecordRow title="Pendências" subtitle={briefingAnalysis.missingInfo.join(", ") || "Nenhuma"} />
-                </div>
-              )}
-            </Panel>
-          </section>
-        )}
-
-        {section === "creatives" && (
-          <section className="panel-grid single">
-            <Panel title="Criativos e análise multimodal">
-              <p className="panel-copy">
-                Faça upload de imagens ou vídeos. Para imagens, a análise roda via Gemini multimodal e devolve
-                hooks, leitura visual, melhorias e score.
-              </p>
-              <div className="asset-grid">
-                {assets.length === 0 && <p className="empty-state">Nenhum criativo enviado ainda.</p>}
-                {assets.map((asset) => (
-                  <article key={asset.id} className="asset-card">
-                    <div>
-                      <strong>{asset.name}</strong>
-                      <p>{asset.kind} · {asset.status}</p>
-                    </div>
-                    {asset.kind === "image" && (
-                      <button className="secondary" disabled={isBusy} onClick={() => analyzeAsset(asset.id)}>
-                        {asset.status === "analyzed" ? "Reanalisar" : "Analisar com Gemini"}
-                      </button>
-                    )}
-                    {asset.analysis && (
-                      <div className="analysis-block">
-                        <p><strong>Resumo:</strong> {asset.analysis.summary}</p>
-                        <p><strong>Hooks:</strong> {asset.analysis.hooks.join(" · ")}</p>
-                        <p><strong>Visual:</strong> {asset.analysis.visualNotes.join(" · ")}</p>
-                        <p><strong>Melhorias:</strong> {asset.analysis.improvementIdeas.join(" · ")}</p>
-                        <p><strong>Score:</strong> {asset.analysis.score}/10</p>
-                      </div>
-                    )}
-                  </article>
+        <section className="workspace-layout">
+          <aside className="workspace-sidebar">
+            <div className="workspace-sidebar-card">
+              <span className="eyebrow">Seções</span>
+              <div className="workspace-section-list">
+                {SECTION_OPTIONS.map((item) => (
+                  <button
+                    key={item.id}
+                    className={section === item.id ? "section-item active" : "section-item"}
+                    onClick={() => setSection(item.id)}
+                  >
+                    <span>{item.eyebrow}</span>
+                    <strong>{item.label}</strong>
+                    <p>{item.description}</p>
+                  </button>
                 ))}
               </div>
-            </Panel>
-          </section>
-        )}
+            </div>
+          </aside>
 
-        {section === "agents" && (
-          <section className="panel-grid agno-layout">
-            <Panel title="Agno Agent Studio">
-              <div className="agent-studio-grid">
-                <div className="agent-catalog">
-                  {agentDefinitions.map((agent) => (
-                    <button
-                      key={agent.id}
-                      className={selectedAgentId === agent.id ? "agent-chip active" : "agent-chip"}
-                      onClick={() => {
-                        setSelectedAgentId(agent.id);
-                        setAgentPrompt(agent.starterPrompts[0] || "");
-                      }}
-                    >
-                      <span className="agent-chip-icon">{agent.icon}</span>
-                      <span>
-                        <strong>{agent.name}</strong>
-                        <small>{agent.role}</small>
-                      </span>
-                    </button>
+          <section className="workspace-main">
+            <div className="hero-card">
+              <span className="eyebrow">Contexto atual</span>
+              <h2>{activeSection.label}</h2>
+              <p>{activeSection.description}</p>
+            </div>
+
+            <section className="metrics-grid">
+              {metrics.map((metric) => (
+                <article key={metric.label} className="metric-card">
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                </article>
+              ))}
+            </section>
+
+            {section === "overview" && (
+              <section className="panel-grid">
+                <Panel title="Clientes ativos">
+                  {clients.map((client) => (
+                    <RecordRow key={client.id} title={client.name} subtitle={`${client.industry} · ${VERTICAL_LABELS[client.vertical].title}`} />
                   ))}
-                </div>
+                </Panel>
+                <Panel title="Contas Meta configuradas">
+                  {accounts.map((account) => (
+                    <RecordRow key={account.id} title={account.name} subtitle={account.adAccountId} />
+                  ))}
+                </Panel>
+                <Panel title="Campanhas em andamento">
+                  {campaigns.map((campaign) => (
+                    <RecordRow key={campaign.id} title={campaign.name} subtitle={`${campaign.objective} · ${campaign.status}`} />
+                  ))}
+                </Panel>
+                <Panel title="Rotinas ativas">
+                  {automations.map((job) => (
+                    <RecordRow key={job.id} title={job.name} subtitle={`${job.type} · ${job.schedule}`} />
+                  ))}
+                </Panel>
+              </section>
+            )}
 
-                <div className="agent-workbench">
-                  <div className="agent-headline">
-                    <div>
-                      <span className="eyebrow">AG-UI stream</span>
-                      <h3>{selectedAgent?.name}</h3>
-                      <p>{selectedAgent?.description}</p>
+            {section === "briefing" && (
+              <section className="panel-grid single">
+                <Panel title="Briefing Builder">
+                  <textarea
+                    className="briefing-box"
+                    placeholder="Cole o briefing completo aqui..."
+                    value={briefing}
+                    onChange={(event) => setBriefing(event.target.value)}
+                  />
+                  <div className="button-row">
+                    <button className="primary" onClick={() => setBriefingAnalysis(analyzeBriefingText(briefing))}>
+                      Analisar briefing
+                    </button>
+                  </div>
+                  {briefingAnalysis && (
+                    <div className="analysis-grid">
+                      <RecordRow title={`Cliente: ${briefingAnalysis.client || "N/A"}`} subtitle={`Produto: ${briefingAnalysis.product || "N/A"}`} />
+                      <RecordRow title={`Objetivo: ${briefingAnalysis.objective || "N/A"}`} subtitle={`Budget: ${briefingAnalysis.budget ? `R$ ${briefingAnalysis.budget}` : "N/A"}`} />
+                      <RecordRow title={`CPA: ${briefingAnalysis.targetCpa || "N/A"}`} subtitle={`ROAS: ${briefingAnalysis.targetRoas || "N/A"}`} />
+                      <RecordRow title="Pendências" subtitle={briefingAnalysis.missingInfo.join(", ") || "Nenhuma"} />
                     </div>
-                    <div className="button-row compact">
-                      {selectedAgent?.starterPrompts.slice(0, 2).map((prompt) => (
-                        <button key={prompt} className="secondary" onClick={() => setAgentPrompt(prompt)}>
-                          Usar prompt
-                        </button>
-                      ))}
-                    </div>
+                  )}
+                </Panel>
+              </section>
+            )}
+
+            {section === "creatives" && (
+              <section className="panel-grid single">
+                <Panel title="Creative Review">
+                  <p className="panel-copy">
+                    Faça upload de imagens ou vídeos. Para imagens, a análise roda via Gemini multimodal e devolve
+                    hook, leitura visual, melhorias e score.
+                  </p>
+                  <div className="asset-grid">
+                    {assets.length === 0 && <p className="empty-state">Nenhum criativo enviado ainda.</p>}
+                    {assets.map((asset) => (
+                      <article key={asset.id} className="asset-card">
+                        <div>
+                          <strong>{asset.name}</strong>
+                          <p>{asset.kind} · {asset.status}</p>
+                        </div>
+                        {asset.kind === "image" && (
+                          <button className="secondary" disabled={isBusy} onClick={() => analyzeAsset(asset.id)}>
+                            {asset.status === "analyzed" ? "Reanalisar" : "Analisar com Gemini"}
+                          </button>
+                        )}
+                        {asset.analysis && (
+                          <div className="analysis-block">
+                            <p><strong>Resumo:</strong> {asset.analysis.summary}</p>
+                            <p><strong>Hooks:</strong> {asset.analysis.hooks.join(" · ")}</p>
+                            <p><strong>Visual:</strong> {asset.analysis.visualNotes.join(" · ")}</p>
+                            <p><strong>Melhorias:</strong> {asset.analysis.improvementIdeas.join(" · ")}</p>
+                            <p><strong>Score:</strong> {asset.analysis.score}/10</p>
+                          </div>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </Panel>
+              </section>
+            )}
+
+            {section === "agents" && (
+              <section className="panel-grid two">
+                <Panel title="Agent Studio">
+                  <div className="agent-catalog">
+                    {agentDefinitions.map((agent) => (
+                      <button
+                        key={agent.id}
+                        className={selectedAgentId === agent.id ? "agent-chip active" : "agent-chip"}
+                        onClick={() => {
+                          setSelectedAgentId(agent.id);
+                          setAgentPrompt(agent.starterPrompts[0] || "");
+                        }}
+                      >
+                        <span className="agent-chip-icon">{agent.icon}</span>
+                        <span>
+                          <strong>{agent.name}</strong>
+                          <small>{agent.role}</small>
+                        </span>
+                      </button>
+                    ))}
                   </div>
 
                   <textarea
@@ -665,101 +681,93 @@ function NeuroSkillsWorkspace() {
                       <div className="panel-header">
                         <h3>Resposta do agent</h3>
                       </div>
-                      <div className="agent-response-copy">
-                        {agentResponseText || "A resposta textual do agent aparece aqui."}
-                      </div>
+                      <div className="agent-response-copy">{agentResponseText || "A resposta do agent aparece aqui."}</div>
                     </section>
                   </div>
-                </div>
-              </div>
-            </Panel>
+                </Panel>
 
-            <Panel title="A2UI Canvas">
-              <p className="panel-copy">
-                O backend Agno devolve widgets declarativos A2UI. Aqui a aplicação renderiza esse JSON em
-                componentes visuais úteis para a operação.
-              </p>
-              <A2UIRenderer blocks={agentWidgets} />
-              {latestAgentRun && (
-                <div className="analysis-block">
-                  <p><strong>Resumo:</strong> {latestAgentRun.summary}</p>
-                  <p><strong>Run ID:</strong> {latestAgentRun.runId}</p>
-                </div>
-              )}
-            </Panel>
-          </section>
-        )}
+                <Panel title="A2UI Canvas">
+                  <A2UIRenderer blocks={agentWidgets} />
+                  {latestAgentRun && (
+                    <div className="analysis-block">
+                      <p><strong>Resumo:</strong> {latestAgentRun.summary}</p>
+                      <p><strong>Run ID:</strong> {latestAgentRun.runId}</p>
+                    </div>
+                  )}
+                </Panel>
+              </section>
+            )}
 
-        {section === "campaigns" && (
-          <section className="panel-grid single">
-            <Panel title="Campaign workspace">
-              <div className="campaign-grid">
-                {campaigns.map((campaign) => (
-                  <article key={campaign.id} className="record-card">
-                    <strong>{campaign.name}</strong>
-                    <p>{campaign.objective}</p>
-                    <p>Budget: R$ {campaign.budget.toLocaleString("pt-BR")}</p>
-                    <p>Angle: {campaign.copyAngle}</p>
-                    <span className={`status-pill ${campaign.status}`}>{campaign.status}</span>
-                  </article>
-                ))}
-              </div>
-            </Panel>
-          </section>
-        )}
-
-        {section === "analytics" && (
-          <section className="panel-grid two">
-            <Panel title="Resumo da conta">
-              <RecordRow title={`Impressions: ${analytics.impressions.toLocaleString("pt-BR")}`} subtitle={`Clicks: ${analytics.clicks.toLocaleString("pt-BR")}`} />
-              <RecordRow title={`CTR: ${analytics.ctr.toFixed(2)}%`} subtitle={`CPC: R$ ${analytics.cpc.toFixed(2)}`} />
-              <RecordRow title={`Spend: R$ ${analytics.spend.toLocaleString("pt-BR")}`} subtitle={`ROAS: ${analytics.roas.toFixed(2)}x`} />
-            </Panel>
-            <Panel title="Leituras rápidas">
-              <ul className="bullet-list">
-                <li>CTR acima de 2% em campanhas principais.</li>
-                <li>ROAS saudável para operação de topo + fundo.</li>
-                <li>Melhor janela para testes: 12h e 19h.</li>
-              </ul>
-            </Panel>
-          </section>
-        )}
-
-        {section === "automations" && (
-          <section className="panel-grid single">
-            <Panel title="Automações">
-              {automations.map((job) => (
-                <article key={job.id} className="record-card inline">
-                  <div>
-                    <strong>{job.name}</strong>
-                    <p>{job.type} · {job.schedule}</p>
+            {section === "campaigns" && (
+              <section className="panel-grid single">
+                <Panel title="Campaign Workspace">
+                  <div className="campaign-grid">
+                    {campaigns.map((campaign) => (
+                      <article key={campaign.id} className="record-card campaign-card">
+                        <strong>{campaign.name}</strong>
+                        <p>{campaign.objective}</p>
+                        <p>Budget: R$ {campaign.budget.toLocaleString("pt-BR")}</p>
+                        <p>Angle: {campaign.copyAngle}</p>
+                        <span className={`status-pill ${campaign.status}`}>{campaign.status}</span>
+                      </article>
+                    ))}
                   </div>
-                  <span className={`status-pill ${job.enabled ? "ready" : "paused"}`}>{job.enabled ? "ativo" : "pausado"}</span>
-                </article>
-              ))}
-            </Panel>
-          </section>
-        )}
+                </Panel>
+              </section>
+            )}
 
-        {section === "settings" && (
-          <section className="panel-grid two">
-            <Panel title="Clientes">
-              {clients.map((client) => (
-                <RecordRow key={client.id} title={client.name} subtitle={`R$ ${client.monthlyBudget.toLocaleString("pt-BR")}/mês`} />
-              ))}
-            </Panel>
-            <Panel title="Contas Meta">
-              {accounts.map((account) => (
-                <RecordRow key={account.id} title={account.name} subtitle={account.adAccountId} />
-              ))}
-            </Panel>
+            {section === "analytics" && (
+              <section className="panel-grid two">
+                <Panel title="Resumo da conta">
+                  <RecordRow title={`Impressions: ${analytics.impressions.toLocaleString("pt-BR")}`} subtitle={`Clicks: ${analytics.clicks.toLocaleString("pt-BR")}`} />
+                  <RecordRow title={`CTR: ${analytics.ctr.toFixed(2)}%`} subtitle={`CPC: R$ ${analytics.cpc.toFixed(2)}`} />
+                  <RecordRow title={`Spend: R$ ${analytics.spend.toLocaleString("pt-BR")}`} subtitle={`ROAS: ${analytics.roas.toFixed(2)}x`} />
+                </Panel>
+                <Panel title="Leituras rápidas">
+                  <ul className="bullet-list">
+                    <li>CTR acima de 2% em campanhas principais.</li>
+                    <li>ROAS saudável para operação de topo + fundo.</li>
+                    <li>Melhor janela para testes: 12h e 19h.</li>
+                  </ul>
+                </Panel>
+              </section>
+            )}
+
+            {section === "automations" && (
+              <section className="panel-grid single">
+                <Panel title="Automações">
+                  {automations.map((job) => (
+                    <article key={job.id} className="record-card inline">
+                      <div>
+                        <strong>{job.name}</strong>
+                        <p>{job.type} · {job.schedule}</p>
+                      </div>
+                      <span className={`status-pill ${job.enabled ? "ready" : "paused"}`}>{job.enabled ? "ativo" : "pausado"}</span>
+                    </article>
+                  ))}
+                </Panel>
+              </section>
+            )}
+
+            {section === "settings" && (
+              <section className="panel-grid two">
+                <Panel title="Clientes">
+                  {clients.map((client) => (
+                    <RecordRow key={client.id} title={client.name} subtitle={`R$ ${client.monthlyBudget.toLocaleString("pt-BR")}/mês`} />
+                  ))}
+                </Panel>
+                <Panel title="Contas Meta">
+                  {accounts.map((account) => (
+                    <RecordRow key={account.id} title={account.name} subtitle={account.adAccountId} />
+                  ))}
+                </Panel>
+              </section>
+            )}
           </section>
-        )}
+        </section>
       </main>
-
-      <CopilotSidebar defaultOpen width="420px" />
-      <CopilotPopup defaultOpen={false} />
-    </div>
+      )}
+    </CopilotSidebar>
   );
 }
 

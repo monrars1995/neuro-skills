@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuro Skills - OG Image</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0f;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .og-image {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #0a0a0f0%, #18181b 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+        }
+        
+        /* Decorative elements */
+        .glow-top {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .glow-bottom {
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        /* Grid pattern */
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.5;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 900px;
+        }
+        
+        /* Logo/Brand */
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .brand-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8972e 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .brand-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: #0a0a0f;
+        }
+        
+        .brand-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-name span {
+            color: #d4af37;
+        }
+        
+        /* Main headline */
+        .headline {
+            font-size: 64px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+        
+        .headline .highlight {
+            background: linear-gradient(135deg, #d4af37 0%, #c9a430 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Subtitle */
+        .subtitle {
+            font-size: 24px;
+            font-weight: 500;
+            color: #a1a1aa;
+            line-height: 1.5;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        
+        /* Features */
+        .features {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 20px;
+            border-radius: 100px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            fill: #d4af37;
+        }
+        
+        .feature-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        /* CTA Badge */
+        .cta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8972e 100%);
+            padding: 14px 32px;
+            border-radius: 100px;
+            color: #0a0a0f;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .cta-badge svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* URL */
+        .url {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #71717a;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="og-image">
+        <div class="glow-top"></div>
+        <div class="glow-bottom"></div>
+        <div class="grid-pattern"></div>
+        
+        <div class="content">
+            <!-- Brand -->
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div class="brand-name">Neuro<span>Skills</span></div>
+            </div>
+            
+            <!-- Main Headline -->
+            <h1 class="headline">
+                O Bastidor Técnico<br>
+                <span class="highlight">que o Mercado Não Mostra</span>
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="subtitle">
+                Framework de automação de Meta Ads para Claude Code,OpenAI Codex e Gemini CLI
+            </p>
+            
+            <!-- Features -->
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="feature-text">Skills Prontos</span>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span class="feature-text">Automação Real</span>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span class="feature-text">ROI Comprovado</span>
+                </div>
+            </div>
+            
+            <!-- CTA Button -->
+            <a href="https://goldneuron.io" class="cta-badge">
+                <span>Começar Agora</span>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 7l5 5-5 5M6 12h12"/>
+                </svg>
+            </a>
+        </div>
+        
+        <!-- URL -->
+        <div class="url">goldneuron.io</div>
+    </div>
+</body>
+</html>

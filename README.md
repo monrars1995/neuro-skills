@@ -95,6 +95,19 @@ neuro-skills setup
 neuro-skills init meu-projeto
 ```
 
+### App Web Completa com CopilotKit
+
+```bash
+cd apps/copilot-ui
+npm install
+cp .env.example .env
+npm run dev
+```
+
+- UI completa da aplicação em Next.js
+- CopilotKit integrado na aplicação inteira
+- Gemini multimodal para análise de criativos
+
 ---
 
 ## 🏗️ O Que Você Vai Encontrar

@@ -16,7 +16,13 @@ Site: https://goldneuron.io/
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def main():
@@ -131,7 +137,7 @@ def run_command(args):
     """Executa o comando solicitado."""
 
     if args.command in ["analyze-profile", "cv-analyze"]:
-        from .analyzer.profile_analyzer import ProfileAnalyzer
+        from analyzer.profile_analyzer import ProfileAnalyzer
 
         analyzer = ProfileAnalyzer()
         return analyzer.analyze(
@@ -139,19 +145,19 @@ def run_command(args):
         )
 
     elif args.command in ["analyze-post", "cv-post"]:
-        from .analyzer.post_analyzer import PostAnalyzer
+        from analyzer.post_analyzer import PostAnalyzer
 
         analyzer = PostAnalyzer()
         return analyzer.analyze(args.url, {"analyze_visual": args.analyze_visual})
 
     elif args.command in ["analyze-image", "cv-image"]:
-        from .analyzer.image_analyzer import ImageAnalyzer
+        from analyzer.image_analyzer import ImageAnalyzer
 
         analyzer = ImageAnalyzer()
         return analyzer.analyze(args.source)
 
     elif args.command in ["create-model", "cv-model"]:
-        from .models.style_model import StyleModeler
+        from models.style_model import StyleModeler
 
         modeler = StyleModeler()
         return modeler.create_model(
@@ -159,7 +165,7 @@ def run_command(args):
         )
 
     elif args.command in ["list-models", "cv-list"]:
-        from .models.style_model import StyleModeler
+        from models.style_model import StyleModeler
 
         modeler = StyleModeler()
         return modeler.list_models(
@@ -167,7 +173,7 @@ def run_command(args):
         )
 
     elif args.command in ["generate", "cv-generate"]:
-        from .generator.content_generator import ContentGenerator
+        from generator.content_generator import ContentGenerator
 
         generator = ContentGenerator()
         return generator.generate(
@@ -177,7 +183,7 @@ def run_command(args):
         )
 
     elif args.command in ["dashboard", "cv-dashboard"]:
-        from .utils.dashboard import Dashboard
+        from utils.dashboard import Dashboard
 
         dashboard = Dashboard()
         if args.formato == "markdown":
@@ -208,7 +214,7 @@ def setup_system(vertical: str = None):
         "default_vertical": vertical or "concessionarias",
         "analytics_enabled": True,
         "cache_duration_days": 30,
-        "created_at": str(Path.ctime(base_dir)) if base_dir.exists() else None,
+        "created_at": datetime.now().isoformat(),
     }
 
     config_path = base_dir / "config.json"

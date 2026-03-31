@@ -15,6 +15,7 @@ import { startTransition, useMemo, useState } from "react";
 import { analyzeBriefingText } from "@/lib/briefing";
 import {
   DEFAULT_ACCOUNTS,
+  DEFAULT_AGENTS,
   DEFAULT_ANALYTICS,
   DEFAULT_AUTOMATIONS,
   DEFAULT_CAMPAIGNS,
@@ -23,8 +24,13 @@ import {
   DEFAULT_VERTICAL,
   VERTICAL_LABELS,
 } from "@/lib/default-state";
+import { A2UIRenderer } from "@/components/a2ui-renderer";
 import type {
+  AgentDefinition,
+  AgentEvent,
+  AgentRunResult,
   AnalyticsSnapshot,
+  A2UIBlock,
   AppSection,
   AutomationJob,
   BriefingAnalysis,
@@ -59,6 +65,14 @@ function NeuroSkillsWorkspace() {
   const [vertical, setVertical] = useState<VerticalKey>(DEFAULT_VERTICAL);
   const [clients, setClients] = useState<ClientRecord[]>(DEFAULT_CLIENTS);
   const [accounts, setAccounts] = useState<MetaAccountRecord[]>(DEFAULT_ACCOUNTS);
+  const [agentDefinitions] = useState<AgentDefinition[]>(DEFAULT_AGENTS);
+  const [selectedAgentId, setSelectedAgentId] = useState(DEFAULT_AGENTS[0]?.id || "traffic-strategist");
+  const [agentPrompt, setAgentPrompt] = useState(DEFAULT_AGENTS[0]?.starterPrompts[0] || "");
+  const [agentEvents, setAgentEvents] = useState<AgentEvent[]>([]);
+  const [agentWidgets, setAgentWidgets] = useState<A2UIBlock[]>([]);
+  const [agentResponseText, setAgentResponseText] = useState("");
+  const [latestAgentRun, setLatestAgentRun] = useState<AgentRunResult | null>(null);
+  const [isAgentRunning, setIsAgentRunning] = useState(false);
   const [briefing, setBriefing] = useState("");
   const [briefingAnalysis, setBriefingAnalysis] = useState<BriefingAnalysis | null>(null);
   const [assets, setAssets] = useState<PendingAsset[]>([]);
@@ -68,6 +82,7 @@ function NeuroSkillsWorkspace() {
   const [isBusy, setIsBusy] = useState(false);
 
   const activeVertical = VERTICAL_LABELS[vertical];
+  const selectedAgent = agentDefinitions.find((agent) => agent.id === selectedAgentId) || agentDefinitions[0];
   const metrics = useMemo(
     () => [
       { label: "Spend", value: `R$ ${analytics.spend.toLocaleString("pt-BR")}` },
@@ -87,6 +102,9 @@ function NeuroSkillsWorkspace() {
   useCopilotReadable({ description: "Campanhas em rascunho ou prontas", value: JSON.stringify(campaigns) });
   useCopilotReadable({ description: "Automações configuradas", value: JSON.stringify(automations) });
   useCopilotReadable({ description: "Snapshot de analytics da conta", value: JSON.stringify(analytics) });
+  useCopilotReadable({ description: "Agent definitions disponíveis", value: JSON.stringify(agentDefinitions) });
+  useCopilotReadable({ description: "Agent run atual", value: JSON.stringify(latestAgentRun) });
+  useCopilotReadable({ description: "Widgets A2UI atuais", value: JSON.stringify(agentWidgets) });
 
   useCopilotAction({
     name: "navigateSection",
@@ -241,6 +259,31 @@ function NeuroSkillsWorkspace() {
   });
 
   useCopilotAction({
+    name: "setAgnoAgent",
+    description: "Seleciona um agent do backend Agno",
+    parameters: [{ name: "agentId", type: "string", required: true }],
+    handler: ({ agentId }) => {
+      const found = agentDefinitions.find((agent) => agent.id === agentId);
+      if (!found) return;
+      setSelectedAgentId(found.id);
+      setAgentPrompt(found.starterPrompts[0] || "");
+      setSection("agents");
+    },
+  });
+
+  useCopilotAction({
+    name: "runAgnoAgent",
+    description: "Executa um agent Agno e atualiza a UI com eventos AG-UI e widgets A2UI",
+    parameters: [
+      { name: "agentId", type: "string", required: true },
+      { name: "prompt", type: "string", required: true },
+    ],
+    handler: async ({ agentId, prompt }) => {
+      await runAgentStream(String(agentId || selectedAgentId), String(prompt || agentPrompt));
+    },
+  });
+
+  useCopilotAction({
     name: "analyzeUploadedCreative",
     description: "Analisa um criativo já enviado usando Gemini multimodal",
     parameters: [
@@ -311,6 +354,84 @@ function NeuroSkillsWorkspace() {
     }
   }
 
+  async function runAgentStream(agentId: string, prompt: string) {
+    setSection("agents");
+    setIsAgentRunning(true);
+    setSelectedAgentId(agentId);
+    setAgentPrompt(prompt);
+    setAgentEvents([]);
+    setAgentWidgets([]);
+    setAgentResponseText("");
+    setLatestAgentRun(null);
+
+    try {
+      const response = await fetch("/api/agno/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agentId,
+          prompt,
+          vertical,
+          briefing,
+          context: {
+            briefingAnalysis,
+            analytics,
+            campaigns,
+            assets: assets.map(stripBase64),
+          },
+        }),
+      });
+
+      if (!response.body) {
+        setIsAgentRunning(false);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const chunks = buffer.split("\n\n");
+        buffer = chunks.pop() || "";
+
+        for (const chunk of chunks) {
+          const eventType = chunk.match(/^event:\s*(.+)$/m)?.[1]?.trim();
+          const dataLine = chunk.match(/^data:\s*(.+)$/m)?.[1];
+          if (!eventType || !dataLine) continue;
+          const data = JSON.parse(dataLine);
+
+          if (eventType === "text_delta") {
+            const delta = data.delta || data.label || "";
+            setAgentResponseText((current) => `${current}${current ? " " : ""}${delta}`.trim());
+          } else if (eventType === "a2ui") {
+            setAgentWidgets(data.widgets || []);
+          } else if (eventType === "run_finished") {
+            setLatestAgentRun(data as AgentRunResult);
+            setAgentWidgets((data as AgentRunResult).widgets || []);
+            setAgentResponseText((data as AgentRunResult).responseText || "");
+          } else {
+            setAgentEvents((current) => [
+              ...current,
+              {
+                id: crypto.randomUUID(),
+                type: eventType,
+                label: data.label || eventType,
+                detail: data.detail,
+                timestamp: data.timestamp || new Date().toISOString(),
+              },
+            ]);
+          }
+        }
+      }
+    } finally {
+      setIsAgentRunning(false);
+    }
+  }
+
   return (
     <div className="app-shell">
       <aside className="left-rail">
@@ -326,6 +447,7 @@ function NeuroSkillsWorkspace() {
             ["overview", "Overview"],
             ["briefing", "Briefing"],
             ["creatives", "Creatives"],
+            ["agents", "Agents"],
             ["campaigns", "Campaigns"],
             ["analytics", "Analytics"],
             ["automations", "Automations"],
@@ -354,10 +476,10 @@ function NeuroSkillsWorkspace() {
         <header className="hero-card">
           <div>
             <span className="eyebrow">Aplicação completa</span>
-            <h2>Meta Ads + briefing + uploads + analytics + automações</h2>
+            <h2>Meta Ads + CopilotKit + Agno + AG-UI + A2UI</h2>
             <p>
-              Port da aplicação para uma interface web agent-native com CopilotKit no centro da experiência e
-              Gemini multimodal para analisar criativos.
+              Interface web agent-native com CopilotKit, backend Agno para agents operacionais, stream AG-UI e
+              widgets declarativos A2UI para a camada visual.
             </p>
           </div>
           <div className="hero-actions">
@@ -460,6 +582,110 @@ function NeuroSkillsWorkspace() {
                   </article>
                 ))}
               </div>
+            </Panel>
+          </section>
+        )}
+
+        {section === "agents" && (
+          <section className="panel-grid agno-layout">
+            <Panel title="Agno Agent Studio">
+              <div className="agent-studio-grid">
+                <div className="agent-catalog">
+                  {agentDefinitions.map((agent) => (
+                    <button
+                      key={agent.id}
+                      className={selectedAgentId === agent.id ? "agent-chip active" : "agent-chip"}
+                      onClick={() => {
+                        setSelectedAgentId(agent.id);
+                        setAgentPrompt(agent.starterPrompts[0] || "");
+                      }}
+                    >
+                      <span className="agent-chip-icon">{agent.icon}</span>
+                      <span>
+                        <strong>{agent.name}</strong>
+                        <small>{agent.role}</small>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="agent-workbench">
+                  <div className="agent-headline">
+                    <div>
+                      <span className="eyebrow">AG-UI stream</span>
+                      <h3>{selectedAgent?.name}</h3>
+                      <p>{selectedAgent?.description}</p>
+                    </div>
+                    <div className="button-row compact">
+                      {selectedAgent?.starterPrompts.slice(0, 2).map((prompt) => (
+                        <button key={prompt} className="secondary" onClick={() => setAgentPrompt(prompt)}>
+                          Usar prompt
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <textarea
+                    className="briefing-box agent-prompt-box"
+                    value={agentPrompt}
+                    onChange={(event) => setAgentPrompt(event.target.value)}
+                    placeholder="Escreva a tarefa para o agent..."
+                  />
+
+                  <div className="button-row">
+                    <button
+                      className="primary"
+                      disabled={isAgentRunning || !selectedAgentId || !agentPrompt.trim()}
+                      onClick={() => runAgentStream(selectedAgentId, agentPrompt)}
+                    >
+                      {isAgentRunning ? "Executando agent..." : "Executar agent"}
+                    </button>
+                  </div>
+
+                  <div className="agent-result-grid">
+                    <section className="agent-stream-card">
+                      <div className="panel-header">
+                        <h3>Eventos AG-UI</h3>
+                      </div>
+                      {agentEvents.length === 0 ? (
+                        <p className="empty-state">Os eventos do agent aparecem aqui em streaming.</p>
+                      ) : (
+                        <div className="agent-events-list">
+                          {agentEvents.map((event) => (
+                            <article key={event.id} className="agent-event">
+                              <strong>{event.label}</strong>
+                              <p>{event.type}</p>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+
+                    <section className="agent-stream-card">
+                      <div className="panel-header">
+                        <h3>Resposta do agent</h3>
+                      </div>
+                      <div className="agent-response-copy">
+                        {agentResponseText || "A resposta textual do agent aparece aqui."}
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+
+            <Panel title="A2UI Canvas">
+              <p className="panel-copy">
+                O backend Agno devolve widgets declarativos A2UI. Aqui a aplicação renderiza esse JSON em
+                componentes visuais úteis para a operação.
+              </p>
+              <A2UIRenderer blocks={agentWidgets} />
+              {latestAgentRun && (
+                <div className="analysis-block">
+                  <p><strong>Resumo:</strong> {latestAgentRun.summary}</p>
+                  <p><strong>Run ID:</strong> {latestAgentRun.runId}</p>
+                </div>
+              )}
             </Panel>
           </section>
         )}

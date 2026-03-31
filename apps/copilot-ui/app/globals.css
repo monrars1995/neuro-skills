@@ -189,7 +189,10 @@ select {
 .panel-grid,
 .asset-grid,
 .campaign-grid,
-.analysis-grid {
+.analysis-grid,
+.a2ui-grid,
+.agent-result-grid,
+.agent-studio-grid {
   display: grid;
   gap: 16px;
 }
@@ -218,6 +221,10 @@ select {
 
 .panel-grid.two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel-grid.agno-layout {
+  grid-template-columns: 1.35fr 1fr;
 }
 
 .panel {
@@ -251,6 +258,11 @@ select {
   margin-top: 12px;
   display: flex;
   gap: 12px;
+}
+
+.button-row.compact {
+  margin-top: 0;
+  flex-wrap: wrap;
 }
 
 .analysis-block {
@@ -291,6 +303,182 @@ select {
   margin: 0;
 }
 
+.agent-studio-grid {
+  grid-template-columns: 260px 1fr;
+  align-items: start;
+}
+
+.agent-catalog {
+  display: grid;
+  gap: 12px;
+}
+
+.agent-chip {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.agent-chip.active {
+  border-color: rgba(212, 175, 55, 0.42);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.agent-chip span {
+  display: grid;
+  gap: 4px;
+}
+
+.agent-chip small {
+  color: var(--muted);
+}
+
+.agent-chip-icon {
+  min-width: 42px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-strong));
+  color: var(--bg);
+  font-weight: 800;
+}
+
+.agent-workbench {
+  display: grid;
+  gap: 16px;
+}
+
+.agent-headline {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.agent-headline h3,
+.a2ui-header h4 {
+  margin: 0;
+}
+
+.agent-headline p,
+.a2ui-header p,
+.a2ui-row p,
+.agent-event p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.agent-prompt-box {
+  min-height: 180px;
+}
+
+.agent-result-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.agent-stream-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(10, 10, 15, 0.55);
+  padding: 18px;
+}
+
+.agent-events-list {
+  display: grid;
+  gap: 10px;
+}
+
+.agent-event {
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.agent-response-copy {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.a2ui-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.a2ui-card {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.a2ui-card.a2ui-hero {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.16), rgba(255, 255, 255, 0.03));
+}
+
+.a2ui-header {
+  margin-bottom: 14px;
+}
+
+.a2ui-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.a2ui-stat,
+.a2ui-list-item,
+.a2ui-row {
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.a2ui-stat span,
+.a2ui-list-item span {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.a2ui-stat.success strong,
+.a2ui-list-item.done span {
+  color: #8de6bc;
+}
+
+.a2ui-stat.warning strong,
+.a2ui-list-item.active span {
+  color: #f0bf69;
+}
+
+.a2ui-stat.danger strong,
+.a2ui-list-item.pending span {
+  color: #f19999;
+}
+
+.a2ui-list,
+.a2ui-table {
+  display: grid;
+  gap: 10px;
+}
+
+.a2ui-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
 @media (max-width: 1100px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -305,7 +493,11 @@ select {
 
   .metrics-grid,
   .panel-grid,
-  .panel-grid.two {
+  .panel-grid.two,
+  .panel-grid.agno-layout,
+  .agent-studio-grid,
+  .agent-result-grid,
+  .a2ui-grid {
     grid-template-columns: 1fr;
   }
 }

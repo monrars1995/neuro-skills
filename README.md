@@ -107,6 +107,7 @@ npm run dev
 - UI completa da aplicação em Next.js
 - CopilotKit integrado na aplicação inteira
 - Gemini multimodal para análise de criativos
+- Agent Studio com Agno + AG-UI + A2UI
 
 ---
 

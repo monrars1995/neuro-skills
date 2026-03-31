@@ -1,4 +1,5 @@
 import type {
+  AgentDefinition,
   AnalyticsSnapshot,
   AppSection,
   AutomationJob,
@@ -57,6 +58,53 @@ export const DEFAULT_AUTOMATIONS: AutomationJob[] = [
     type: "report",
     schedule: "daily 08:00",
     enabled: true,
+  },
+];
+
+export const DEFAULT_AGENTS: AgentDefinition[] = [
+  {
+    id: "traffic-strategist",
+    name: "Traffic Strategist",
+    role: "Research + strategy",
+    description: "Transforma briefing em direção de campanha, estrutura de testes e prioridades de mídia.",
+    icon: "TS",
+    starterPrompts: [
+      "Monte uma estratégia para captar leads qualificados em concessionárias.",
+      "Estruture uma campanha full-funnel para lançamento imobiliário.",
+    ],
+  },
+  {
+    id: "creative-analyst",
+    name: "Creative Analyst",
+    role: "Creative review",
+    description: "Lê criativos, hooks, leitura visual e sugere melhorias de performance.",
+    icon: "CA",
+    starterPrompts: [
+      "Analise este criativo para Meta Ads e me diga os pontos fortes.",
+      "Quais ganchos visuais eu devo testar em variações desse anúncio?",
+    ],
+  },
+  {
+    id: "campaign-architect",
+    name: "Campaign Architect",
+    role: "Campaign design",
+    description: "Desenha campanha, conjuntos, budget e lógica de segmentação por vertical.",
+    icon: "CP",
+    starterPrompts: [
+      "Crie uma arquitetura de campanha para e-commerce com catálogo e remarketing.",
+      "Defina orçamento e objetivos para uma operação de saúde com foco em agendamento.",
+    ],
+  },
+  {
+    id: "automation-operator",
+    name: "Automation Operator",
+    role: "Automation rules",
+    description: "Propõe rotinas, alertas, cron jobs e playbooks operacionais para escalar a conta.",
+    icon: "AO",
+    starterPrompts: [
+      "Quais automações devo ligar para controlar CPA alto?",
+      "Desenhe um playbook de alertas diários para uma conta com 100k/mês.",
+    ],
   },
 ];
 

@@ -1,0 +1,6 @@
+agno[os]
+fastapi
+uvicorn
+pydantic
+python-dotenv
+google-genai
